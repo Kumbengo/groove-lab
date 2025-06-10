@@ -1,3 +1,16 @@
+class GrooveLab extends HTMLElement {
+  connectedCallback() {
+    this.innerHTML = `
+      <style>
+        :host { display: block; background: #222; color: white; padding: 20px; font-family: sans-serif }
+      </style>
+      <h1>Hello from GitHub!</h1>
+    `;
+  }
+}
+customElements.define('groove-lab', GrooveLab);
+
+
 // groove-lab.js - Custom Element for GrooveLab Widget
 import * as Tone from 'https://cdn.skypack.dev/tone@14.7.77';
 
