@@ -3,8 +3,8 @@ class GrooveLab extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.ctx = null;
-    this.buffers = {};
-    this.sources = {};
+    this.buffer = null;
+    this.source = null;
   }
 
   async connectedCallback() {
@@ -14,68 +14,55 @@ class GrooveLab extends HTMLElement {
       <style>
         button { margin:4px; padding:6px 12px; font:14px sans-serif; }
       </style>
-      <button id="playClave">▶ Clave</button>
-      <button id="stopClave">⏹ Clave</button>
-      <button id="playPerc1">▶ AfroPerc1</button>
-      <button id="stopPerc1">⏹ AfroPerc1</button>
-      <button id="playPerc2">▶ AfroPerc2</button>
-      <button id="stopPerc2">⏹ AfroPerc2</button>
+      <button id="play">▶ Play Clave</button>
+      <button id="stop">⏹ Stop</button>
     `;
 
     const boot = () =>
       (this.ctx ||= new (window.AudioContext || window.webkitAudioContext)());
 
-    const loadBuffer = async (key, url) => {
-      try {
-        console.log(`[Groove-Lab] loading ${key} from ${url}`);
-        const res = await fetch(url);
-        const arrayBuffer = await res.arrayBuffer();
-        const buffer = await boot().decodeAudioData(arrayBuffer);
-        this.buffers[key] = buffer;
-        console.info(`[Groove-Lab] ${key} loaded`);
-      } catch (err) {
-        console.error(`[Groove-Lab] Failed to load ${key}`, err);
+    // ✅ Use your actual file name and casing
+    const url = 'https://kumbengo.github.io/groove-lab/Clave.wav';
+
+    try {
+      console.log('[Groove-Lab] fetching:', url);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
+      const arrayBuffer = await res.arrayBuffer();
+      const buffer = await boot().decodeAudioData(arrayBuffer);
+      this.buffer = buffer;
+      console.log('[Groove-Lab] audio loaded');
+    } catch (err) {
+      console.error('[Groove-Lab] failed to load audio:', err);
+    }
+
+    const play = () => {
+      if (!this.buffer) {
+        console.warn('[Groove-Lab] buffer not ready');
+        return;
       }
-    };
 
-    // 🔒 HARD CODED AUDIO FILE URLs (edit here)
-    const base = 'https://kumbengo.github.io/groove-lab/';
-    await Promise.all([
-      loadBuffer('clave',   base + 'Clave.wav'),
-      loadBuffer('perc1',   base + 'AfroPerc1.wav'),
-      loadBuffer('perc2',   base + 'AfroPerc2.wav'),
-    ]);
-
-    const play = (key) => {
-      const buffer = this.buffers[key];
-      if (!buffer) return console.warn(`[Groove-Lab] ${key} buffer not loaded`);
-
-      const source = boot().createBufferSource();
-      source.buffer = buffer;
-      source.connect(this.ctx.destination);
+      const ctx = boot();
+      const source = ctx.createBufferSource();
+      source.buffer = this.buffer;
       source.loop = true;
+      source.connect(ctx.destination);
       source.start();
-      this.sources[key] = source;
-      console.log(`[Groove-Lab] ${key} started`);
+      this.source = source;
+      console.log('[Groove-Lab] playback started');
     };
 
-    const stop = (key) => {
-      const source = this.sources[key];
-      if (source) {
-        source.stop();
-        source.disconnect();
-        delete this.sources[key];
-        console.log(`[Groove-Lab] ${key} stopped`);
+    const stop = () => {
+      if (this.source) {
+        this.source.stop();
+        this.source.disconnect();
+        this.source = null;
+        console.log('[Groove-Lab] playback stopped');
       }
     };
 
-    // button hookups
-    this.shadowRoot.getElementById('playClave').onclick  = () => play('clave');
-    this.shadowRoot.getElementById('stopClave').onclick  = () => stop('clave');
-    this.shadowRoot.getElementById('playPerc1').onclick  = () => play('perc1');
-    this.shadowRoot.getElementById('stopPerc1').onclick  = () => stop('perc1');
-    this.shadowRoot.getElementById('playPerc2').onclick  = () => play('perc2');
-    this.shadowRoot.getElementById('stopPerc2').onclick  = () => stop('perc2');
+    this.shadowRoot.getElementById('play').onclick = play;
+    this.shadowRoot.getElementById('stop').onclick = stop;
   }
 }
 
