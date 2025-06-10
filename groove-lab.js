@@ -41,9 +41,9 @@ class GrooveLab extends HTMLElement {
     // 🔒 HARD CODED AUDIO FILE URLs (edit here)
     const base = 'https://kumbengo.github.io/groove-lab/';
     await Promise.all([
-      loadBuffer('clave',   base + 'Clave.mp3'),
-      loadBuffer('perc1',   base + 'AfroPerc1.mp3'),
-      loadBuffer('perc2',   base + 'AfroPerc2.mp3'),
+      loadBuffer('clave',   base + 'Clave.wav'),
+      loadBuffer('perc1',   base + 'AfroPerc1.wav'),
+      loadBuffer('perc2',   base + 'AfroPerc2.wav'),
     ]);
 
     const play = (key) => {
