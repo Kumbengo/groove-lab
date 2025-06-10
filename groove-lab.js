@@ -1,107 +1,61 @@
+/*  Groove‑Lab.js — super‑minimal oscillator demo  */
 class GrooveLab extends HTMLElement {
-  connectedCallback() {
-    this.innerHTML = `
-      <style>
-        :host { display: block; background: #222; color: white; padding: 20px; font-family: sans-serif }
-      </style>
-      <h1>Hello from GitHub!</h1>
-    `;
+  constructor() {
+    super();
+    this.attachShadow({mode: 'open'});
+
+    /* instance vars */
+    this.ctx  = null;   // AudioContext, created lazily
+    this.osc  = null;   // OscillatorNode
+    this.gain = null;   // GainNode so we can set volume
   }
-}
-customElements.define('groove-lab', GrooveLab);
 
-
-// groove-lab.js - Custom Element for GrooveLab Widget
-import * as Tone from 'https://cdn.skypack.dev/tone@14.7.77';
-
-class GrooveLab extends HTMLElement {
   connectedCallback() {
-    this.innerHTML = `
+    console.log('[Groove‑Lab] connected to DOM');
+
+    /* put two buttons inside the shadow DOM */
+    this.shadowRoot.innerHTML = `
       <style>
-        :host {
-          display: block;
-          text-align: center;
-          font-family: system-ui, sans-serif;
-        }
-        button {
-          padding: 12px 24px;
-          font-size: 1rem;
-          border: none;
-          border-radius: 8px;
-          background-color: #ff5722;
-          color: white;
-          cursor: pointer;
-          transition: background 0.3s;
-        }
-        button:hover {
-          background-color: #e64a19;
-        }
+        button{margin:4px;padding:6px 12px;font:14px/1 sans-serif;}
       </style>
-      <button id="action">Start Groove</button>
+      <button id="play">Play Tone</button>
+      <button id="stop">Stop Tone</button>
     `;
 
-    this.button = this.querySelector('#action');
+    /* helper: create the AudioContext on first user gesture */
+    const boot = () =>
+      (this.ctx ||= new (window.AudioContext || window.webkitAudioContext)());
 
-    // Use your actual media URLs
-    this.baseLoopUrl = 'https://static.wixstatic.com/media/gtr.mp3';
-    this.patterns = [
-      'https://static.wixstatic.com/media/perc-1.mp3',
-      'https://static.wixstatic.com/media/perc-2.mp3',
-      'https://static.wixstatic.com/media/perc-3.mp3',
-    ];
+    /* start / stop handlers */
+    const play = () => {
+      if (this.osc) { console.debug('[Groove‑Lab] oscillator already running'); return; }
 
-    this.button.addEventListener('click', async () => {
-      await this.initGroove();
-    });
-  }
+      const ctx = boot();                       // 1 | ensure context exists
+      this.gain = ctx.createGain();             // 2 | gain so we can control loudness
+      this.gain.gain.value = 0.10;              // ‑6 dB so it’s not too hot
 
-  async initGroove() {
-    try {
-      await Tone.start(); // Required on mobile
-      
-      this.button.textContent = 'New Pattern';
+      this.osc = ctx.createOscillator();        // 3 | basic tone generator
+      this.osc.type = 'sine';                   // simple sine wave
+      this.osc.frequency.value = 440;           // A4
 
-      this.gtr = new Tone.Player(this.baseLoopUrl).toDestination();
-      this.perc = new Tone.Player(this.pickPattern()).toDestination();
+      this.osc.connect(this.gain).connect(ctx.destination);
+      this.osc.start();
+      console.log('[Groove‑Lab] oscillator started (440 Hz)');
+    };
 
-      // Load both before starting transport
-      await Promise.all([
-        this.gtr.load(),
-        this.perc.load()
-      ]);
+    const stop = () => {
+      if (!this.osc) return;
+      this.osc.stop();                          // halt the tone
+      this.osc.disconnect();
+      this.osc = null;
+      console.log('[Groove‑Lab] oscillator stopped');
+    };
 
-      // Sync loop start – 8 bars assumed
-      Tone.Transport.scheduleRepeat(() => {
-        this.gtr.start('+0');
-        this.perc.start('+0');
-      }, '8m');
-
-      Tone.Transport.start();
-
-      this.button.onclick = () => this.swapPattern();
-    } catch (err) {
-      console.error('Tone.js init failed:', err);
-      this.button.textContent = 'Error loading audio';
-    }
-  }
-
-  pickPattern() {
-    const index = Math.floor(Math.random() * this.patterns.length);
-    return this.patterns[index];
-  }
-
-  swapPattern() {
-    const newUrl = this.pickPattern();
-    this.perc.load(newUrl);
-    this.flashButton();
-  }
-
-  flashButton() {
-    this.button.animate(
-      [{ opacity: 1 }, { opacity: 0.3 }, { opacity: 1 }],
-      { duration: 300 }
-    );
+    /* wire buttons */
+    this.shadowRoot.getElementById('play').onclick = play;
+    this.shadowRoot.getElementById('stop').onclick = stop;
   }
 }
 
+/* register the custom element (tag name must contain a dash) */
 customElements.define('groove-lab', GrooveLab);
