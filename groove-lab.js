@@ -10,24 +10,23 @@ class GrooveLab extends HTMLElement {
   async connectedCallback() {
     console.log('[Groove-Lab] connected');
 
-    this.shadowRoot.innerHTML = 
+    this.shadowRoot.innerHTML = `
       <style>
         button { margin:4px; padding:6px 12px; font:14px sans-serif; }
       </style>
       <button id="play">▶ Play Clave</button>
       <button id="stop">⏹ Stop</button>
-    ;
+    `;
 
     const boot = () =>
       (this.ctx ||= new (window.AudioContext || window.webkitAudioContext)());
 
-    // ✅ Use your actual file name and casing
     const url = 'https://kumbengo.github.io/groove-lab/Clave.wav';
 
     try {
       console.log('[Groove-Lab] fetching:', url);
       const res = await fetch(url);
-      if (!res.ok) throw new Error(HTTP ${res.status} - ${res.statusText});
+      if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
       const arrayBuffer = await res.arrayBuffer();
       const buffer = await boot().decodeAudioData(arrayBuffer);
       this.buffer = buffer;
