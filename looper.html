@@ -1,0 +1,146 @@
+<!-- === Mini‑Looper – Play‑unlocks audio, Master Stop only ========= -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spinnaker&display=swap">
+
+<style>
+  :root{
+    --green:#1fa382; --red:#c44e3a; --gold:#e0b04f;
+    --fg:#f8f8f8; --bg:#000; --r:6px;
+  }
+  body{font-family:Spinnaker,sans-serif;background:var(--bg);color:var(--fg);
+       margin:0;padding:0 20px 24px;}
+  h2{margin:18px 0 10px;font-size:22px;text-align:center;}
+  .status{font-size:14px;opacity:.75;text-align:center;margin-bottom:14px;}
+  .btn{border:0;border-radius:var(--r);padding:8px 18px;font:16px/1 Spinnaker,sans-serif;
+       cursor:pointer;transition:background .15s,transform .1s;}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .gold{background:var(--gold);color:#000;}
+  .gold:hover:not(:disabled){transform:scale(1.05);}
+  .green{background:var(--green);color:#fff;}
+  .green:hover:not(:disabled){transform:scale(1.05);}
+  .red{background:var(--red);color:#fff;}
+  .red:hover:not(:disabled){transform:scale(1.05);}
+  #masterRow{display:none;justify-content:center;margin-bottom:18px;}
+  .track-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
+  .track-row span{width:80px;font-size:15px;}
+  #panel{max-width:420px;margin:0 auto;}
+</style>
+
+<h2>Mini&nbsp;Looper</h2>
+
+<div id="masterRow">
+  <button id="killAll" class="btn red">🛑 Stop All</button>
+</div>
+
+<div id="status" class="status">Tone.js loading…</div>
+<div id="panel"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.min.js"></script>
+<script>
+/* ── helpers & state ─────────────────────────────────────────────── */
+const status  = document.getElementById('status');
+const log     = m=>{status.textContent=m;console.log('[Looper]',m);};
+
+if(!window.Tone){log('❌ Tone.js failed');throw new Error();}
+log(`✅ Tone.js ${Tone.version} loaded – buffering loops…`);
+
+const tracks=[
+  {id:'A',label:'Loop A',url:'https://kumbengo.github.io/groove-lab/AfroPerc1.wav'},
+  {id:'B',label:'Loop B',url:'https://kumbengo.github.io/groove-lab/Clave.wav'}
+];
+
+const masterRow=document.getElementById('masterRow');
+const killAll  =document.getElementById('killAll');
+const panel    =document.getElementById('panel');
+
+const players={},btns={},swapState={};
+let loaded=0,unlocked=false;
+
+/* ── build players & UI immediately (files start loading) ─────────── */
+tracks.forEach(t=>{
+  const p=new Tone.Player({
+      url:t.url,loop:false,autostart:false,
+      onload:onFileReady,onerror:e=>log(`❌ ${t.label} error: ${e}`)})
+      .toDestination();
+  p.sync().start(0);        // follow Transport
+  p.mute=true;
+  players[t.id]=p;
+
+  // UI row
+  const row=document.createElement('div');
+  row.className='track-row';
+  row.innerHTML=`
+      <span>${t.label}</span>
+      <button class="btn green play" disabled>Play</button>
+      <button class="btn red  stop" disabled>Stop</button>`;
+  panel.appendChild(row);
+  btns[t.id]={play:row.querySelector('.play'),stop:row.querySelector('.stop')};
+});
+
+/* ── after each file decodes ──────────────────────────────────────── */
+function onFileReady(){
+  if(++loaded<tracks.length){
+    log(`🎧 ${loaded}/${tracks.length} buffered…`);
+    return;
+  }
+  log('🎧 All loops buffered – click Play');
+  masterRow.style.display='flex';
+  enableKillAll();
+  enableTrackButtons();
+}
+
+/* ── track Play/Stop handlers ─────────────────────────────────────── */
+function enableTrackButtons(){
+  tracks.forEach(t=>{
+    const p=players[t.id];
+    const {play,stop}=btns[t.id];
+    enable(play); swapState[t.id]=true;   // true→can play
+
+    play.onclick = async ()=>{
+      await unlockIfNeeded();
+      startTransportIfNeeded();
+      p.mute=false; swap(t.id); log(`▶ ${t.label}`);
+    };
+    stop.onclick = ()=>{ p.mute=true; swap(t.id); log(`⏹ ${t.label}`); };
+  });
+}
+
+/* ── master kill button ───────────────────────────────────────────── */
+function enableKillAll(){
+  killAll.onclick=()=>{
+    tracks.forEach(t=>{
+      players[t.id].mute=true;
+      const {play,stop}=btns[t.id];
+      enable(play); disable(stop); swapState[t.id]=true;
+    });
+    if(Tone.Transport.state === 'started'){ Tone.Transport.stop(); }
+    log('🛑 All loops stopped');
+  };
+}
+
+/* ── helper actions ──────────────────────────────────────────────── */
+async function unlockIfNeeded(){
+  if(unlocked) return;
+  await Tone.start(); unlocked=true; log('🔓 Audio unlocked');
+}
+function startTransportIfNeeded(){
+  if(Tone.Transport.state === 'started') return;
+  Tone.Transport.loop = true;
+  Tone.Transport.loopEnd = Tone.Time('10.0');
+  Tone.Transport.start('+0.1');
+}
+function swap(id){
+  const {play,stop}=btns[id];
+  if(swapState[id]){ disable(play); enable(stop);}
+  else             { enable(play); disable(stop);}
+  swapState[id]=!swapState[id];
+}
+function enable(b){ b.disabled=false; b.removeAttribute('disabled'); }
+function disable(b){ b.disabled=true;  b.setAttribute('disabled',''); }
+
+/* ── clean‑up on navigation ───────────────────────────────────────── */
+window.addEventListener('unload',()=>{
+  Tone.Transport.stop();
+  Object.values(players).forEach(p=>p.dispose());
+});
+</script>
