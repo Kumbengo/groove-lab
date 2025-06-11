@@ -1,0 +1,139 @@
+<h2>Mini Looper v2 (Minimal)</h2>
+<button id="killAll" disabled>Stop All</button>
+
+<div id="panel" style="display:flex; gap:20px;">
+  <div id="base"></div>
+  <div id="carousel"></div>
+</div>
+
+<!-- Tone.js -->
+<script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.min.js"></script>
+<script>
+  // DOM refs
+  const killAllBtn  = document.getElementById('killAll');
+  const baseCol     = document.getElementById('base');
+  const carouselCol = document.getElementById('carousel');
+
+  // Hard-coded tracks
+  const baseTrack = {id:'BASE', label:'Master Loop', url:'https://kumbengo.github.io/groove-lab/Clave.wav'};
+  const variations = [
+    {id:'VAR1', label:'Variation A', url:'https://kumbengo.github.io/groove-lab/AfroPerc1.wav'},
+    {id:'VAR2', label:'Variation B', url:'https://kumbengo.github.io/groove-lab/AfroPerc2.wav'}
+  ];
+
+  const players = {}, btns = {};
+  let currentVar = 0, loaded = 0, unlocked = false;
+
+  // create a row [label][Play][Stop]
+  function makeRow(track, parent) {
+    const row = document.createElement('div');
+    const lbl = document.createElement('span'); lbl.textContent = track.label;
+    const play = document.createElement('button'); play.textContent = 'Play';  play.disabled = true;
+    const stop = document.createElement('button'); stop.textContent = 'Stop';  stop.disabled = true;
+    row.append(lbl, play, stop);
+    parent.append(row);
+    btns[track.id] = { play, stop };
+    return row;
+  }
+
+  // build UI
+  makeRow(baseTrack, baseCol);
+  const varRow = makeRow(variations[0], carouselCol);
+
+  // carousel arrows
+  const left = document.createElement('button'), right = document.createElement('button');
+  left.textContent = '<'; right.textContent = '>';
+  carouselCol.append(left, right);
+  left.onclick  = () => cycleVar(-1);
+  right.onclick = () => cycleVar( 1);
+
+  // Stop All
+  killAllBtn.onclick = () => {
+    Tone.Transport.stop();
+    Object.values(players).forEach(p => p.mute = true);
+    Object.values(btns).forEach(({play, stop}) => {
+      play.disabled = false;
+      stop.disabled = true;
+    });
+  };
+
+  // load players
+  [baseTrack, ...variations].forEach(t => {
+    const p = new Tone.Player({
+      url: t.url,
+      loop: false,
+      autostart: false,
+      onload: onLoad
+    }).toDestination()
+      .sync().start(0);
+    p.mute = true;
+    players[t.id] = p;
+  });
+
+  function onLoad() {
+    loaded++;
+    if (loaded < variations.length + 1) return;
+    killAllBtn.disabled = false;
+    enableTrack(baseTrack.id);
+    enableTrack(variations[currentVar].id);
+  }
+
+  function enableTrack(id) {
+    const p = players[id];
+    const { play, stop } = btns[id];
+    play.disabled = false;
+    play.onclick = async () => {
+      if (!unlocked) {
+        await Tone.start();
+        unlocked = true;
+      }
+      if (Tone.Transport.state !== 'started') {
+        Tone.Transport.loop    = true;
+        Tone.Transport.loopEnd = '8m';
+        Tone.Transport.start();
+      }
+      if (id !== baseTrack.id) {
+        variations.forEach(v => {
+          if (v.id !== id) {
+            players[v.id].mute = true;
+            btns[v.id].play.disabled = false;
+            btns[v.id].stop.disabled = true;
+          }
+        });
+      }
+      p.mute = false;
+      play.disabled = true;
+      stop.disabled = false;
+    };
+    stop.onclick = () => {
+      p.mute = true;
+      play.disabled = false;
+      stop.disabled = true;
+    };
+  }
+
+  function cycleVar(dir) {
+    // turn off old
+    const old = variations[currentVar].id;
+    players[old].mute = true;
+    btns[old].play.disabled = false;
+    btns[old].stop.disabled = true;
+
+    // wrap index
+    currentVar = (currentVar + dir + variations.length) % variations.length;
+    const next = variations[currentVar];
+
+    // update label
+    varRow.querySelector('span').textContent = next.label;
+    // swap buttons
+    const { play, stop } = btns[next.id];
+    varRow.querySelector('button:nth-child(2)').replaceWith(play);
+    varRow.querySelector('button:nth-child(3)').replaceWith(stop);
+    enableTrack(next.id);
+  }
+
+  window.addEventListener('unload', () => {
+    Tone.Transport.stop();
+    Object.values(players).forEach(p => p.dispose());
+  });
+</script>
