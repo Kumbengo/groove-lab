@@ -1,146 +1,433 @@
-<!-- === Mini‑Looper – Play‑unlocks audio, Master Stop only ========= -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spinnaker&display=swap">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Looper</title>
+  <!-- Add Krub font from Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Krub:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* ─── Base Styles ───────────────────────────────────────── */
+    body, button, div {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      font-family: 'Krub', sans-serif;
+      color: #fff;
+    }
+    #panel {
+      padding: 30px;
+      width: 582px;
+      margin: 0 auto;
+    }
+    .group-row {
+      display: flex;
+      gap: 18px;
+      margin-bottom: 24px; 
+    }
 
-<style>
-  :root{
-    --green:#1fa382; --red:#c44e3a; --gold:#e0b04f;
-    --fg:#f8f8f8; --bg:#000; --r:6px;
-  }
-  body{font-family:Spinnaker,sans-serif;background:var(--bg);color:var(--fg);
-       margin:0;padding:0 20px 24px;}
-  h2{margin:18px 0 10px;font-size:22px;text-align:center;}
-  .status{font-size:14px;opacity:.75;text-align:center;margin-bottom:14px;}
-  .btn{border:0;border-radius:var(--r);padding:8px 18px;font:16px/1 Spinnaker,sans-serif;
-       cursor:pointer;transition:background .15s,transform .1s;}
-  .btn:disabled{opacity:.35;cursor:default;}
-  .gold{background:var(--gold);color:#000;}
-  .gold:hover:not(:disabled){transform:scale(1.05);}
-  .green{background:var(--green);color:#fff;}
-  .green:hover:not(:disabled){transform:scale(1.05);}
-  .red{background:var(--red);color:#fff;}
-  .red:hover:not(:disabled){transform:scale(1.05);}
-  #masterRow{display:none;justify-content:center;margin-bottom:18px;}
-  .track-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
-  .track-row span{width:80px;font-size:15px;}
-  #panel{max-width:420px;margin:0 auto;}
-</style>
+    /* ─── Drum-Pad Button Styles ───────────────────────────── */
+    @property --gradient-angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
 
-<h2>Mini&nbsp;Looper</h2>
+    .toggle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 120px;
+      height: 120px;
+      background: #232323;
+      border: 2px solid #F2A03D;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.12s cubic-bezier(.4,2,.6,1), box-shadow 0.18s;
+      box-shadow: 0 2px 8px #0008;
+      position: relative;
+      z-index: 1;
+    }
+    .toggle span {
+      pointer-events: none;
+      font-size: 18px;
+    }
+    .toggle .icon {
+      margin-top: 12px;
+      font-size: 26px;
+      line-height: 1;
+    }
+    .toggle:not(:disabled):not(.selected):not(.variation-selected):hover {
+      background: #2d2d2d;
+    }
 
-<div id="masterRow">
-  <button id="killAll" class="btn red">🛑 Stop All</button>
-</div>
+    /* Disabled pads: solid charcoal with light outline */
+    .toggle:disabled {
+      background: #333;
+      border-color: #555;
+      color: #777;
+      opacity: 1;
+      cursor: default;
+    }
 
-<div id="status" class="status">Tone.js loading…</div>
-<div id="panel"></div>
+    /* Disabled variation pads: even lighter gray */
+    .toggle.variation-enabled:disabled,
+    .toggle.variation-selected:disabled {
+      background: #bbb;
+      border-color: #ddd;
+      color: #888;
+    }
 
-<script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.min.js"></script>
-<script>
-/* ── helpers & state ─────────────────────────────────────────────── */
-const status  = document.getElementById('status');
-const log     = m=>{status.textContent=m;console.log('[Looper]',m);};
+    /* ─── Selected States ─────────────────────────────────── */
 
-if(!window.Tone){log('❌ Tone.js failed');throw new Error();}
-log(`✅ Tone.js ${Tone.version} loaded – buffering loops…`);
+    /* Master-selected: golden fill, dark text + glow */
+    .toggle.selected {
+      background: #F2A03D;
+      color: #000;
+      border-color: #F2A03D;
+      box-shadow: 0 0 8px rgba(242, 160, 61, 0.7);
+    }
 
-const tracks=[
-  {id:'A',label:'Loop A',url:'https://kumbengo.github.io/groove-lab/AfroPerc1.wav'},
-  {id:'B',label:'Loop B',url:'https://kumbengo.github.io/groove-lab/Clave.wav'}
-];
+    /* Variation-selected: rusty fill, light text + subtle glow */
+    .toggle.variation-selected {
+      background: #232323;
+      color: #fff;
+      border-color: #D95F43;
+      box-shadow: 0 0 6px rgba(217, 94, 67, 0.6);
+    }
 
-const masterRow=document.getElementById('masterRow');
-const killAll  =document.getElementById('killAll');
-const panel    =document.getElementById('panel');
+    /* Enabled, not-selected variation pads: vibrant background */
+    .toggle.variation-enabled:not(.variation-selected):not(:disabled) {
+      background: #232323;
+      color: #fff;
+      border-color: #D95F43;
+      box-shadow: 0 0 8px 2px #d95f4344;
+    }
 
-const players={},btns={},swapState={};
-let loaded=0,unlocked=false;
+    /* ─── Stop All Button ─────────────────────────────────── */
+    #masterRow {
+      padding: 0;
+      margin: 8px auto 0 auto;
+      display: flex;
+      justify-content: center;
+    }
+    #killAll {
+      border-radius: 8px;
+      padding: 12px 36px;
+      background: #D95F43;
+      border: 2px solid #D95F43;
+      color: #fff;
+      font-size: 17px;
+      font-family: 'Krub', sans-serif;
+      cursor: pointer;
+      transition: background 0.3s, color 0.2s;
+      box-shadow: 0 2px 8px #0008;
+      margin: 0 auto;
+    }
+    #killAll:hover {
+      background: #e86a50;
+      color: #fff;
+    }
 
-/* ── build players & UI immediately (files start loading) ─────────── */
-tracks.forEach(t=>{
-  const p=new Tone.Player({
-      url:t.url,loop:false,autostart:false,
-      onload:onFileReady,onerror:e=>log(`❌ ${t.label} error: ${e}`)})
-      .toDestination();
-  p.sync().start(0);        // follow Transport
-  p.mute=true;
-  players[t.id]=p;
+    .col-separator {
+      width: 0;
+      height: 84px;
+      border-left: 2.5px solid;
+      border-image: linear-gradient(to bottom, #F2A03D, #D95F43) 1;
+      margin: 0 14px;
+      opacity: 0.7;
+      box-shadow: 0 0 6px #F2A03D44;
+      align-self: center;
+    }
 
-  // UI row
-  const row=document.createElement('div');
-  row.className='track-row';
-  row.innerHTML=`
-      <span>${t.label}</span>
-      <button class="btn green play" disabled>Play</button>
-      <button class="btn red  stop" disabled>Stop</button>`;
-  panel.appendChild(row);
-  btns[t.id]={play:row.querySelector('.play'),stop:row.querySelector('.stop')};
-});
+    /* Subtle press animation */
+    .toggle:not(:disabled):active {
+      transform: scale(0.96);
+      box-shadow: 0 1px 2px #0006;
+    }
 
-/* ── after each file decodes ──────────────────────────────────────── */
-function onFileReady(){
-  if(++loaded<tracks.length){
-    log(`🎧 ${loaded}/${tracks.length} buffered…`);
-    return;
-  }
-  log('🎧 All loops buffered – click Play');
-  masterRow.style.display='flex';
-  enableKillAll();
-  enableTrackButtons();
-}
+    .looper-container {
+      max-width: 420px;
+      margin: 32px auto;
+      background: rgba(20, 20, 20, 0.92);
+      border-radius: 10px;
+      box-shadow: 0 2px 18px #000a, 0 1px 0 #222 inset;
+      border: 1px solid #232323;
+      padding: 16px 18px 14px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
 
-/* ── track Play/Stop handlers ─────────────────────────────────────── */
-function enableTrackButtons(){
-  tracks.forEach(t=>{
-    const p=players[t.id];
-    const {play,stop}=btns[t.id];
-    enable(play); swapState[t.id]=true;   // true→can play
+    .pad-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 124px;
+      height: 124px;
+      vertical-align: middle;
+    }
 
-    play.onclick = async ()=>{
-      await unlockIfNeeded();
-      startTransportIfNeeded();
-      p.mute=false; swap(t.id); log(`▶ ${t.label}`);
-    };
-    stop.onclick = ()=>{ p.mute=true; swap(t.id); log(`⏹ ${t.label}`); };
-  });
-}
+    .glow-square {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 126px;
+      height: 126px;
+      transform: translate(-50%, -50%);
+      border-radius: 12px;
+      z-index: 0;
+      background: conic-gradient(
+        from var(--gradient-angle),
+        #2ad1b3, #F2A03D, #e0704d, #2ad1b3, #F2A03D
+      );
+      animation: rotation 2.5s linear infinite;
+      filter: blur(0.5rem);
+      opacity: 0.85;
+      pointer-events: none;
+    }
 
-/* ── master kill button ───────────────────────────────────────────── */
-function enableKillAll(){
-  killAll.onclick=()=>{
-    tracks.forEach(t=>{
-      players[t.id].mute=true;
-      const {play,stop}=btns[t.id];
-      enable(play); disable(stop); swapState[t.id]=true;
+    @keyframes rotation {
+      0% {
+        --gradient-angle: 0deg;
+      }
+      100% {
+        --gradient-angle: 360deg;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BUTTON PANEL -->
+  <div id="panel"></div>
+
+  <!-- STOP ALL CONTROL -->
+  <div id="masterRow">
+    <button id="killAll">Stop All</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.min.js"></script>
+  <script>
+    const masters = [
+      {
+        id: 'M1',
+        url: 'https://kumbengo.github.io/groove-lab/Clave.wav',
+        variations: [
+          { id: 'A1', url: 'https://kumbengo.github.io/groove-lab/AfroPerc1.wav' },
+          { id: 'B1', url: 'https://kumbengo.github.io/groove-lab/AfroPerc2.wav' },
+          { id: 'C1', url: 'https://kumbengo.github.io/groove-lab/AfroPerc2.wav' }
+        ]
+      },
+      {
+        id: 'M2',
+        url: 'https://kumbengo.github.io/groove-lab/Clave.wav',
+        variations: [
+          { id: 'A2', url: 'https://kumbengo.github.io/groove-lab/AfroPerc1.wav' },
+          { id: 'B2', url: 'https://kumbengo.github.io/groove-lab/AfroPerc2.wav' },
+          { id: 'C2', url: 'https://kumbengo.github.io/groove-lab/AfroPerc2.wav' }
+        ]
+      },
+      {
+        id: 'M3',
+        url: 'https://kumbengo.github.io/groove-lab/Clave.wav',
+        variations: [
+          { id: 'A3', url: 'https://kumbengo.github.io/groove-lab/AfroPerc1.wav' },
+          { id: 'B3', url: 'https://kumbengo.github.io/groove-lab/AfroPerc2.wav' },
+          { id: 'C3', url: 'https://kumbengo.github.io/groove-lab/AfroPerc2.wav' }
+        ]
+      }
+    ];
+
+    const killAll  = document.getElementById('killAll');
+    const panel    = document.getElementById('panel');
+    const players  = {};
+    const buttons  = {};
+    const state    = { loaded: 0, unlocked: false };
+    let activeMaster = null;
+
+    // Build UI
+    masters.forEach(master => {
+      const group = document.createElement('div');
+      group.className = 'group-row';
+      panel.appendChild(group);
+
+      group.appendChild(createButton(master.id, master.url));
+
+      // Insert separator after master
+      const separator = document.createElement('div');
+      separator.className = 'col-separator';
+      group.appendChild(separator);
+
+      master.variations.forEach(v => {
+        group.appendChild(createButton(v.id, v.url));
+      });
     });
-    if(Tone.Transport.state === 'started'){ Tone.Transport.stop(); }
-    log('🛑 All loops stopped');
-  };
-}
 
-/* ── helper actions ──────────────────────────────────────────────── */
-async function unlockIfNeeded(){
-  if(unlocked) return;
-  await Tone.start(); unlocked=true; log('🔓 Audio unlocked');
-}
-function startTransportIfNeeded(){
-  if(Tone.Transport.state === 'started') return;
-  Tone.Transport.loop = true;
-  Tone.Transport.loopEnd = Tone.Time('10.0');
-  Tone.Transport.start('+0.1');
-}
-function swap(id){
-  const {play,stop}=btns[id];
-  if(swapState[id]){ disable(play); enable(stop);}
-  else             { enable(play); disable(stop);}
-  swapState[id]=!swapState[id];
-}
-function enable(b){ b.disabled=false; b.removeAttribute('disabled'); }
-function disable(b){ b.disabled=true;  b.setAttribute('disabled',''); }
+    // Load audio
+    function setupTrack(id, url) {
+      const player = new Tone.Player({
+        url, loop: false, autostart: false,
+        onload: onFileReady
+      }).toDestination();
+      player.sync().start(0);
+      player.mute = true;
+      players[id] = player;
+    }
 
-/* ── clean‑up on navigation ───────────────────────────────────────── */
-window.addEventListener('unload',()=>{
-  Tone.Transport.stop();
-  Object.values(players).forEach(p=>p.dispose());
-});
-</script>
+    // Create pad button
+    function createButton(id, url) {
+      if (!players[id]) setupTrack(id, url);
+      const name = url.split('/').pop().replace(/\.[^/.]+$/, '');
+      const btn  = document.createElement('button');
+      btn.className   = 'toggle';
+      btn.disabled    = true;
+      btn.innerHTML   = `<span>${name}</span><span class="icon">▶</span>`;
+      buttons[id]     = btn;
+
+      // For variation pads, wrap in .pad-wrapper
+      if (/^[ABC]\d+$/.test(id)) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'pad-wrapper';
+        wrapper.appendChild(btn);
+        return wrapper;
+      }
+      return btn;
+    }
+
+    function onFileReady() {
+      state.loaded++;
+      const total = masters.reduce((sum, m) => sum + 1 + m.variations.length, 0);
+      if (state.loaded < total) return;
+
+      enableKillAll();
+      enableToggles();
+    }
+
+    function enableToggles() {
+      masters.forEach(master => {
+        const mBtn = buttons[master.id];
+        mBtn.disabled = false;
+        mBtn.onclick = async () => {
+          await unlock(); startTransport();
+
+          // If this master is already active, toggle it off
+          if (activeMaster === master.id) {
+            mBtn.classList.remove('selected');
+            players[master.id].mute = true;
+            master.variations.forEach(v => {
+              buttons[v.id].classList.remove('variation-selected');
+              buttons[v.id].classList.remove('variation-enabled');
+              buttons[v.id].disabled = true;
+              players[v.id].mute = true;
+            });
+            activeMaster = null;
+            return;
+          }
+
+          // Deactivate previous master
+          if (activeMaster && activeMaster !== master.id) {
+            const prev = masters.find(x => x.id === activeMaster);
+            buttons[prev.id].classList.remove('selected');
+            players[prev.id].mute = true;
+            prev.variations.forEach(v => {
+              buttons[v.id].classList.remove('variation-selected');
+              buttons[v.id].classList.remove('variation-enabled');
+              buttons[v.id].disabled = true;
+              players[v.id].mute = true;
+              // Remove glow-square from previous master's variations
+              const glow = buttons[v.id].parentElement.querySelector('.glow-square');
+              if (glow) glow.remove();
+            });
+          }
+
+          // Activate new master
+          activeMaster = master.id;
+          mBtn.classList.add('selected');
+          players[master.id].mute = !players[master.id].mute;
+
+          // Enable its variations
+          master.variations.forEach(v => {
+            buttons[v.id].disabled = false;
+            buttons[v.id].classList.remove('variation-selected');
+            buttons[v.id].classList.add('variation-enabled');
+          });
+        };
+
+        // Handle variations
+        master.variations.forEach(v => {
+          const vBtn = buttons[v.id];
+          vBtn.onclick = async () => {
+            if (vBtn.disabled) return;
+            await unlock(); startTransport();
+
+            // Mute siblings & clear styling
+            master.variations
+              .filter(x => x.id !== v.id)
+              .forEach(x => {
+                players[x.id].mute = true;
+                buttons[x.id].classList.remove('variation-selected');
+                buttons[x.id].classList.add('variation-enabled');
+                // Remove glow-square from siblings
+                const siblingGlow = buttons[x.id].parentElement.querySelector('.glow-square');
+                if (siblingGlow) siblingGlow.remove();
+              });
+
+            // Remove any existing glow-square (always)
+            const existingGlow = vBtn.parentElement.querySelector('.glow-square');
+            if (existingGlow) existingGlow.remove();
+
+            // Toggle this one + apply style
+            const wasMuted = players[v.id].mute;
+            players[v.id].mute = !wasMuted;
+            vBtn.classList.toggle('variation-selected', wasMuted);
+            if (wasMuted) {
+              vBtn.classList.remove('variation-enabled');
+              // Add glow-square behind the button
+              const glow = document.createElement('div');
+              glow.className = 'glow-square';
+              vBtn.parentElement.insertBefore(glow, vBtn);
+            } else {
+              vBtn.classList.add('variation-enabled');
+              // (No glow-square added)
+            }
+          };
+        });
+      });
+    }
+
+    function enableKillAll() {
+      killAll.disabled = false;
+      killAll.onclick = () => {
+        masters.forEach(m => {
+          players[m.id].mute = true;
+          buttons[m.id].classList.remove('selected');
+          m.variations.forEach(v => {
+            players[v.id].mute = true;
+            buttons[v.id].classList.remove('variation-selected');
+            buttons[v.id].classList.remove('variation-enabled');
+            buttons[v.id].disabled = true;
+            const glow = buttons[v.id].parentElement.querySelector('.glow-square');
+            if (glow) glow.remove();
+          });
+        });
+        if (Tone.Transport.state === 'started') Tone.Transport.stop();
+      };
+    }
+
+    async function unlock() {
+      if (!state.unlocked) {
+        await Tone.start();
+        state.unlocked = true;
+      }
+    }
+
+    function startTransport() {
+      if (Tone.Transport.state !== 'started') {
+        Tone.Transport.loop    = true;
+        Tone.Transport.loopEnd = Tone.Time('10.0');
+        Tone.Transport.start('+0.1');
+      }
+    }
+  </script>
+</body>
+</html>
