@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Looper – prototype</title>
+
+  <!-- Tone.js -->
+  <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.min.js"></script>
+
+  <style>
+    /*  super-basic, no colours / fonts  */
+    body{margin:0;font:16px/1 sans-serif;padding:20px;text-align:center;}
+    #wrap {display:flex;gap:40px;justify-content:center;align-items:flex-start;}
+    .col  {display:flex;flex-direction:column;align-items:center;}
+    button{padding:10px 18px;margin:6px 0;cursor:pointer;}
+    .nav  {display:flex;gap:20px;margin-top:4px;font-size:22px;user-select:none;}
+    .nav span{cursor:pointer;}
+    #status{margin:14px 0;font-size:14px;opacity:.8;}
+  </style>
+</head>
+<body>
+
+<h2>Mini Looper v0</h2>
+
+<div id="status">Loading Tone …</div>
+
+<div id="wrap">
+  <!-- left column – master -->
+  <div class="col" id="masterCol">
+    <button id="masterBtn">Loading…</button>
+  </div>
+
+  <!-- right column – carousel -->
+  <div class="col" id="varCol">
+    <button id="varBtn">Loading…</button>
+    <div class="nav">
+      <span id="prev">⬅</span>
+      <span id="next">➡</span>
+    </div>
+  </div>
+</div>
+
+<button id="stopAll">Stop All</button>
+
+<script>
+/*  ---- file list ----  */
+const MASTER_URL  = 'https://kumbengo.github.io/groove-lab/Clave.wav';
+
+const VARIATIONS = [
+  'https://kumbengo.github.io/groove-lab/AfroPerc1.wav',
+  'https://kumbengo.github.io/groove-lab/AfroPerc2.wav'
+];
+
+/*  ---- helpers ----  */
+const $ = id => document.getElementById(id);
+const basename = url => url.split('/').pop().replace(/\.[^/.]+$/,'');
+
+const status = $('status');
+const log = txt => { status.textContent = txt; console.log('[Looper]',txt); };
+
+/*  ---- Tone Players ----  */
+const masterPlayer = new Tone.Player(MASTER_URL, onLoad).toDestination();
+masterPlayer.loop = true;
+masterPlayer.sync().start(0);
+masterPlayer.mute = true;
+
+const varPlayers = VARIATIONS.map(url=>{
+  const p = new Tone.Player(url, onLoad).toDestination();
+  p.loop = true;
+  p.sync().start(0);
+  p.mute = true;
+  return p;
+});
+
+let loaded = 0;
+function onLoad(){
+  loaded++;
+  if(loaded === 1 + varPlayers.length){
+    initUI();
+    log('Ready – press Play');
+  } else {
+    log(`Loading ${loaded}/${1+varPlayers.length} …`);
+  }
+}
+
+/*  ---- UI setup (runs after all buffers decoded) ----  */
+function initUI(){
+  /* labels */
+  $('masterBtn').textContent = '▶ ' + basename(MASTER_URL);
+  let currentIdx = 0;
+  $('varBtn').textContent    = '▶ ' + basename(VARIATIONS[currentIdx]);
+
+  /* --- Master play / stop --- */
+  let masterPlaying = false;
+  $('masterBtn').onclick = async ()=>{
+    await unlock();
+    masterPlaying = !masterPlaying;
+    masterPlayer.mute = !masterPlaying;
+    $('masterBtn').textContent = (masterPlaying? '⏹':'▶') + ' ' + basename(MASTER_URL);
+
+    if(masterPlaying){
+      if(Tone.Transport.state!=='started'){
+        Tone.Transport.loop = true;
+        Tone.Transport.start('+0.05');
+      }
+    }else{
+      // stop everything
+      Tone.Transport.stop();
+      masterPlayer.mute = true;
+      varPlayers.forEach(p=>p.mute=true);
+      $('varBtn').textContent = '▶ ' + basename(VARIATIONS[currentIdx]);
+      varPlaying = false;
+    }
+  };
+
+  /* --- Variation play / stop --- */
+  let varPlaying = false;
+  $('varBtn').onclick = async ()=>{
+    if(!masterPlaying) return;              // only allowed while master running
+    varPlaying = !varPlaying;
+    varPlayers.forEach((p,i)=>{ p.mute = !(varPlaying && i===currentIdx); });
+    $('varBtn').textContent = (varPlaying? '⏹':'▶')+' '+basename(VARIATIONS[currentIdx]);
+  };
+
+  /* --- Carousel arrows --- */
+  const cycle = dir=>{
+    currentIdx = (currentIdx + dir + VARIATIONS.length) % VARIATIONS.length;
+    $('varBtn').textContent =
+      (varPlaying? '⏹':'▶') + ' ' + basename(VARIATIONS[currentIdx]);
+    // ensure only the visible variation is un-muted if already playing
+    varPlayers.forEach((p,i)=>{ p.mute = !(varPlaying && i===currentIdx); });
+  };
+  $('prev').onclick = ()=>cycle(-1);
+  $('next').onclick = ()=>cycle(1);
+
+  /* --- Stop-All button --- */
+  $('stopAll').onclick = ()=>{
+    Tone.Transport.stop();
+    masterPlaying = varPlaying = false;
+    masterPlayer.mute = true;
+    varPlayers.forEach(p=>p.mute=true);
+    $('masterBtn').textContent = '▶ ' + basename(MASTER_URL);
+    $('varBtn').textContent    = '▶ ' + basename(VARIATIONS[currentIdx]);
+  };
+}
+
+/* ---- first user gesture unlocks audio ---- */
+let unlocked = false;
+async function unlock(){
+  if(!unlocked){
+    await Tone.start();
+    unlocked = true;
+    log('Audio unlocked');
+  }
+}
+
+/* ---- clean-up (optional) ---- */
+window.addEventListener('unload',()=>{
+  Tone.Transport.stop();
+  masterPlayer.dispose();
+  varPlayers.forEach(p=>p.dispose());
+});
+</script>
+</body>
+</html>
