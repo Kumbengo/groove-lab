@@ -1,2 +1,2 @@
-# groove-lab
-Temporary ToneJS code
+# Kumbengo Groove-Lab
+Web player for sound demos

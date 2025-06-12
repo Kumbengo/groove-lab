@@ -7,10 +7,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Krub:wght@400;700&display=swap" rel="stylesheet">
   <style>
     /* ─── Base Styles ───────────────────────────────────────── */
+    html, body {
+      background: transparent !important;
+    }
     body, button, div {
       margin: 0;
       padding: 0;
-      background: #000;
+      /* background: #000; */
       font-family: 'Krub', sans-serif;
       color: #fff;
     }
@@ -90,8 +93,8 @@
 
     /* Variation-selected: rusty fill, light text + subtle glow */
     .toggle.variation-selected {
-      background: #232323;
-      color: #fff;
+      background: #174941;
+      color: #F2A03D;
       border-color: #D95F43;
       box-shadow: 0 0 6px rgba(217, 94, 67, 0.6);
     }
@@ -171,17 +174,17 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 126px;
-      height: 126px;
+      width: 124px;
+      height: 124px;
       transform: translate(-50%, -50%);
       border-radius: 12px;
       z-index: 0;
       background: conic-gradient(
         from var(--gradient-angle),
-        #2ad1b3, #F2A03D, #e0704d, #2ad1b3, #F2A03D
+        #F2A03D, #FF6A00, #D95F43, #FF3C00, #F2A03D
       );
       animation: rotation 2.5s linear infinite;
-      filter: blur(0.5rem);
+      filter: blur(0.4rem);
       opacity: 0.85;
       pointer-events: none;
     }
@@ -194,240 +197,33 @@
         --gradient-angle: 360deg;
       }
     }
+
+    .main-bg-container {
+      background: #181c20;
+      border-radius: 18px;
+      padding: 36px 32px 28px 32px;
+      max-width: 700px;
+      margin: 40px auto;
+      box-shadow: 0 4px 32px #000a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
   </style>
 </head>
 <body>
 
-  <!-- BUTTON PANEL -->
-  <div id="panel"></div>
+  <div class="main-bg-container">
+    <!-- BUTTON PANEL -->
+    <div id="panel"></div>
 
-  <!-- STOP ALL CONTROL -->
-  <div id="masterRow">
-    <button id="killAll">Stop All</button>
+    <!-- STOP ALL CONTROL -->
+    <div id="masterRow">
+      <button id="killAll">Stop All</button>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.min.js"></script>
-  <script>
-    const masters = [
-      {
-        id: 'M1',
-        url: 'https://kumbengo.github.io/groove-lab/Clave.wav',
-        variations: [
-          { id: 'A1', url: 'https://kumbengo.github.io/groove-lab/AfroPerc1.wav' },
-          { id: 'B1', url: 'https://kumbengo.github.io/groove-lab/AfroPerc2.wav' },
-          { id: 'C1', url: 'https://kumbengo.github.io/groove-lab/AfroPerc2.wav' }
-        ]
-      },
-      {
-        id: 'M2',
-        url: 'https://kumbengo.github.io/groove-lab/Clave.wav',
-        variations: [
-          { id: 'A2', url: 'https://kumbengo.github.io/groove-lab/AfroPerc1.wav' },
-          { id: 'B2', url: 'https://kumbengo.github.io/groove-lab/AfroPerc2.wav' },
-          { id: 'C2', url: 'https://kumbengo.github.io/groove-lab/AfroPerc2.wav' }
-        ]
-      },
-      {
-        id: 'M3',
-        url: 'https://kumbengo.github.io/groove-lab/Clave.wav',
-        variations: [
-          { id: 'A3', url: 'https://kumbengo.github.io/groove-lab/AfroPerc1.wav' },
-          { id: 'B3', url: 'https://kumbengo.github.io/groove-lab/AfroPerc2.wav' },
-          { id: 'C3', url: 'https://kumbengo.github.io/groove-lab/AfroPerc2.wav' }
-        ]
-      }
-    ];
-
-    const killAll  = document.getElementById('killAll');
-    const panel    = document.getElementById('panel');
-    const players  = {};
-    const buttons  = {};
-    const state    = { loaded: 0, unlocked: false };
-    let activeMaster = null;
-
-    // Build UI
-    masters.forEach(master => {
-      const group = document.createElement('div');
-      group.className = 'group-row';
-      panel.appendChild(group);
-
-      group.appendChild(createButton(master.id, master.url));
-
-      // Insert separator after master
-      const separator = document.createElement('div');
-      separator.className = 'col-separator';
-      group.appendChild(separator);
-
-      master.variations.forEach(v => {
-        group.appendChild(createButton(v.id, v.url));
-      });
-    });
-
-    // Load audio
-    function setupTrack(id, url) {
-      const player = new Tone.Player({
-        url, loop: false, autostart: false,
-        onload: onFileReady
-      }).toDestination();
-      player.sync().start(0);
-      player.mute = true;
-      players[id] = player;
-    }
-
-    // Create pad button
-    function createButton(id, url) {
-      if (!players[id]) setupTrack(id, url);
-      const name = url.split('/').pop().replace(/\.[^/.]+$/, '');
-      const btn  = document.createElement('button');
-      btn.className   = 'toggle';
-      btn.disabled    = true;
-      btn.innerHTML   = `<span>${name}</span><span class="icon">▶</span>`;
-      buttons[id]     = btn;
-
-      // For variation pads, wrap in .pad-wrapper
-      if (/^[ABC]\d+$/.test(id)) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'pad-wrapper';
-        wrapper.appendChild(btn);
-        return wrapper;
-      }
-      return btn;
-    }
-
-    function onFileReady() {
-      state.loaded++;
-      const total = masters.reduce((sum, m) => sum + 1 + m.variations.length, 0);
-      if (state.loaded < total) return;
-
-      enableKillAll();
-      enableToggles();
-    }
-
-    function enableToggles() {
-      masters.forEach(master => {
-        const mBtn = buttons[master.id];
-        mBtn.disabled = false;
-        mBtn.onclick = async () => {
-          await unlock(); startTransport();
-
-          // If this master is already active, toggle it off
-          if (activeMaster === master.id) {
-            mBtn.classList.remove('selected');
-            players[master.id].mute = true;
-            master.variations.forEach(v => {
-              buttons[v.id].classList.remove('variation-selected');
-              buttons[v.id].classList.remove('variation-enabled');
-              buttons[v.id].disabled = true;
-              players[v.id].mute = true;
-            });
-            activeMaster = null;
-            return;
-          }
-
-          // Deactivate previous master
-          if (activeMaster && activeMaster !== master.id) {
-            const prev = masters.find(x => x.id === activeMaster);
-            buttons[prev.id].classList.remove('selected');
-            players[prev.id].mute = true;
-            prev.variations.forEach(v => {
-              buttons[v.id].classList.remove('variation-selected');
-              buttons[v.id].classList.remove('variation-enabled');
-              buttons[v.id].disabled = true;
-              players[v.id].mute = true;
-              // Remove glow-square from previous master's variations
-              const glow = buttons[v.id].parentElement.querySelector('.glow-square');
-              if (glow) glow.remove();
-            });
-          }
-
-          // Activate new master
-          activeMaster = master.id;
-          mBtn.classList.add('selected');
-          players[master.id].mute = !players[master.id].mute;
-
-          // Enable its variations
-          master.variations.forEach(v => {
-            buttons[v.id].disabled = false;
-            buttons[v.id].classList.remove('variation-selected');
-            buttons[v.id].classList.add('variation-enabled');
-          });
-        };
-
-        // Handle variations
-        master.variations.forEach(v => {
-          const vBtn = buttons[v.id];
-          vBtn.onclick = async () => {
-            if (vBtn.disabled) return;
-            await unlock(); startTransport();
-
-            // Mute siblings & clear styling
-            master.variations
-              .filter(x => x.id !== v.id)
-              .forEach(x => {
-                players[x.id].mute = true;
-                buttons[x.id].classList.remove('variation-selected');
-                buttons[x.id].classList.add('variation-enabled');
-                // Remove glow-square from siblings
-                const siblingGlow = buttons[x.id].parentElement.querySelector('.glow-square');
-                if (siblingGlow) siblingGlow.remove();
-              });
-
-            // Remove any existing glow-square (always)
-            const existingGlow = vBtn.parentElement.querySelector('.glow-square');
-            if (existingGlow) existingGlow.remove();
-
-            // Toggle this one + apply style
-            const wasMuted = players[v.id].mute;
-            players[v.id].mute = !wasMuted;
-            vBtn.classList.toggle('variation-selected', wasMuted);
-            if (wasMuted) {
-              vBtn.classList.remove('variation-enabled');
-              // Add glow-square behind the button
-              const glow = document.createElement('div');
-              glow.className = 'glow-square';
-              vBtn.parentElement.insertBefore(glow, vBtn);
-            } else {
-              vBtn.classList.add('variation-enabled');
-              // (No glow-square added)
-            }
-          };
-        });
-      });
-    }
-
-    function enableKillAll() {
-      killAll.disabled = false;
-      killAll.onclick = () => {
-        masters.forEach(m => {
-          players[m.id].mute = true;
-          buttons[m.id].classList.remove('selected');
-          m.variations.forEach(v => {
-            players[v.id].mute = true;
-            buttons[v.id].classList.remove('variation-selected');
-            buttons[v.id].classList.remove('variation-enabled');
-            buttons[v.id].disabled = true;
-            const glow = buttons[v.id].parentElement.querySelector('.glow-square');
-            if (glow) glow.remove();
-          });
-        });
-        if (Tone.Transport.state === 'started') Tone.Transport.stop();
-      };
-    }
-
-    async function unlock() {
-      if (!state.unlocked) {
-        await Tone.start();
-        state.unlocked = true;
-      }
-    }
-
-    function startTransport() {
-      if (Tone.Transport.state !== 'started') {
-        Tone.Transport.loop    = true;
-        Tone.Transport.loopEnd = Tone.Time('10.0');
-        Tone.Transport.start('+0.1');
-      }
-    }
-  </script>
+  <script src="looper.js"></script>
 </body>
 </html>
