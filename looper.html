@@ -3,32 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <title>Mini Looper</title>
-  <!-- Add Krub font from Google Fonts -->
+  <!-- ✅ Viewport for responsive scaling -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- ✅ Krub font -->
   <link href="https://fonts.googleapis.com/css2?family=Krub:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
-    /* ─── Base Styles ───────────────────────────────────────── */
-    html, body {
+    /* ─── Responsive Sizing Variables ───────────────────────────── */
+    :root {
+      --pad: clamp(68px, 20vw, 120px);
+      --gap: clamp(8px, 3vw, 18px);
+      --panel-max: 620px;
+    }
+
+    html {
       background: transparent !important;
     }
+
     body, button, div {
       margin: 0;
       padding: 0;
-      /* background: #000; */
       font-family: 'Krub', sans-serif;
       color: #fff;
     }
-    #panel {
-      padding: 30px;
-      width: 582px;
-      margin: 0 auto;
-    }
-    .group-row {
+
+
+    body {
+      background: #181c20;
       display: flex;
-      gap: 18px;
-      margin-bottom: 24px; 
+      flex-direction: column;
+      align-items: center;
     }
 
-    /* ─── Drum-Pad Button Styles ───────────────────────────── */
+    /* ─── Main Container ───────────────────────────────────────── */
+    .main-bg-container {
+      display: contents; /* no need for this extra container */
+      /*
+      background: #181c20;
+      border-radius: 18px;
+      padding: clamp(24px, 6vw, 36px);
+      max-width: calc(var(--panel-max) + 2 * clamp(12px, 4vw, 30px));
+      width: 100%;
+      margin: 40px auto;
+      box-shadow: 0 4px 32px #000a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      */
+    }
+
+    /* ─── Button Panel ─────────────────────────────────────────── */
+    #panel {
+      display: grid;
+      grid-template-rows: repeat(auto-fit, minmax(var(--pad), 1fr));
+      gap: var(--gap);
+      max-width: var(--panel-max);
+      width: 100%;
+      /*
+      margin: 0 auto;
+      padding: clamp(12px, 4vw, 30px);
+      */
+    }
+
+    .group-row {
+      /*display: contents; /* Let grid handle placement */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* gap: 5px; */
+      gap: var(--gap);
+    }
+
+    /* ─── Drum Pad Buttons ─────────────────────────────────────── */
     @property --gradient-angle {
       syntax: '<angle>';
       initial-value: 0deg;
@@ -40,8 +87,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 120px;
-      height: 120px;
+      width: var(--pad);
+      height: var(--pad);
       background: #232323;
       border: 2px solid #F2A03D;
       border-radius: 8px;
@@ -51,20 +98,22 @@
       position: relative;
       z-index: 1;
     }
+
     .toggle span {
       pointer-events: none;
-      font-size: 18px;
+      font-size: clamp(12px, 4vw, 18px);
     }
+
     .toggle .icon {
       margin-top: 12px;
-      font-size: 26px;
+      font-size: clamp(18px, 7vw, 26px);
       line-height: 1;
     }
+
     .toggle:not(:disabled):not(.selected):not(.variation-selected):hover {
       background: #2d2d2d;
     }
 
-    /* Disabled pads: solid charcoal with light outline */
     .toggle:disabled {
       background: #333;
       border-color: #555;
@@ -73,7 +122,6 @@
       cursor: default;
     }
 
-    /* Disabled variation pads: even lighter gray */
     .toggle.variation-enabled:disabled,
     .toggle.variation-selected:disabled {
       background: #bbb;
@@ -81,9 +129,6 @@
       color: #888;
     }
 
-    /* ─── Selected States ─────────────────────────────────── */
-
-    /* Master-selected: golden fill, dark text + glow */
     .toggle.selected {
       background: #F2A03D;
       color: #000;
@@ -91,7 +136,6 @@
       box-shadow: 0 0 8px rgba(242, 160, 61, 0.7);
     }
 
-    /* Variation-selected: rusty fill, light text + subtle glow */
     .toggle.variation-selected {
       background: #174941;
       color: #F2A03D;
@@ -99,7 +143,6 @@
       box-shadow: 0 0 6px rgba(217, 94, 67, 0.6);
     }
 
-    /* Enabled, not-selected variation pads: vibrant background */
     .toggle.variation-enabled:not(.variation-selected):not(:disabled) {
       background: #232323;
       color: #fff;
@@ -107,66 +150,17 @@
       box-shadow: 0 0 8px 2px #d95f4344;
     }
 
-    /* ─── Stop All Button ─────────────────────────────────── */
-    #masterRow {
-      padding: 0;
-      margin: 8px auto 0 auto;
-      display: flex;
-      justify-content: center;
-    }
-    #killAll {
-      border-radius: 8px;
-      padding: 12px 36px;
-      background: #D95F43;
-      border: 2px solid #D95F43;
-      color: #fff;
-      font-size: 17px;
-      font-family: 'Krub', sans-serif;
-      cursor: pointer;
-      transition: background 0.3s, color 0.2s;
-      box-shadow: 0 2px 8px #0008;
-      margin: 0 auto;
-    }
-    #killAll:hover {
-      background: #e86a50;
-      color: #fff;
-    }
-
-    .col-separator {
-      width: 0;
-      height: 84px;
-      border-left: 2.5px solid;
-      border-image: linear-gradient(to bottom, #F2A03D, #D95F43) 1;
-      margin: 0 14px;
-      opacity: 0.7;
-      box-shadow: 0 0 6px #F2A03D44;
-      align-self: center;
-    }
-
-    /* Subtle press animation */
     .toggle:not(:disabled):active {
       transform: scale(0.96);
       box-shadow: 0 1px 2px #0006;
     }
 
-    .looper-container {
-      max-width: 420px;
-      margin: 32px auto;
-      background: rgba(20, 20, 20, 0.92);
-      border-radius: 10px;
-      box-shadow: 0 2px 18px #000a, 0 1px 0 #222 inset;
-      border: 1px solid #232323;
-      padding: 16px 18px 14px 18px;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-    }
-
+    /* ─── Glow Effect ───────────────────────────────────────────── */
     .pad-wrapper {
       position: relative;
       display: inline-block;
-      width: 124px;
-      height: 124px;
+      width: var(--pad);
+      height: var(--pad);
       vertical-align: middle;
     }
 
@@ -174,8 +168,8 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 124px;
-      height: 124px;
+      width: var(--pad);
+      height: var(--pad);
       transform: translate(-50%, -50%);
       border-radius: 12px;
       z-index: 0;
@@ -190,29 +184,58 @@
     }
 
     @keyframes rotation {
-      0% {
-        --gradient-angle: 0deg;
-      }
-      100% {
-        --gradient-angle: 360deg;
+      0% { --gradient-angle: 0deg; }
+      100% { --gradient-angle: 360deg; }
+    }
+
+    /* Optional: reduce glow blur on very small screens */
+    @media (max-width: 480px) {
+      .glow-square {
+        filter: blur(0.28rem);
       }
     }
 
-    .main-bg-container {
-      background: #181c20;
-      border-radius: 18px;
-      padding: 36px 32px 28px 32px;
-      max-width: 700px;
-      margin: 40px auto;
-      box-shadow: 0 4px 32px #000a;
+    /* ─── Stop All Button ───────────────────────────────────────── */
+    #masterRow {
+      margin: 8px auto 0 auto;
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      justify-content: center;
+    }
+
+    #killAll {
+      border-radius: 8px;
+      padding: 12px 36px;
+      background: #D95F43;
+      border: 2px solid #D95F43;
+      color: #fff;
+      font-size: clamp(14px, 4vw, 17px);
+      font-family: 'Krub', sans-serif;
+      cursor: pointer;
+      transition: background 0.3s, color 0.2s;
+      box-shadow: 0 2px 8px #0008;
+      width: 100%;
+      max-width: 280px;
+    }
+
+    #killAll:hover {
+      background: #e86a50;
+      color: #fff;
+    }
+
+    .col-separator {
+      width: 0;
+      /* height: 84px; */
+      height: var(--pad);
+      border-left: 2.5px solid;
+      border-image: linear-gradient(to bottom, #F2A03D, #D95F43) 1;
+      margin: 0 14px;
+      opacity: 0.7;
+      box-shadow: 0 0 6px #F2A03D44;
+      align-self: center;
     }
   </style>
 </head>
 <body>
-
   <div class="main-bg-container">
     <!-- BUTTON PANEL -->
     <div id="panel"></div>
@@ -223,6 +246,7 @@
     </div>
   </div>
 
+  <!-- Your looper script -->
   <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.min.js"></script>
   <script src="looper.js"></script>
 </body>
