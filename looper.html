@@ -13,11 +13,11 @@
     /* ─── Responsive Sizing Variables ───────────────────────────── */
     :root {
       --pad: clamp(68px, 20vw, 120px);
-      --gap: clamp(8px, 3vw, 18px);
+      --gap: clamp(10px, 2vw, 18px);
       --panel-max: 620px;
     }
 
-    html {
+    html, body {
       background: transparent !important;
     }
 
@@ -29,16 +29,19 @@
     }
 
 
-    body {
+    .main-bg-container {
       background: #181c20;
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding: 1vh 1vw;
+      border-radius: 18px;
+      box-shadow: 0 4px 32px #000a;
     }
 
     /* ─── Main Container ───────────────────────────────────────── */
     .main-bg-container {
-      display: contents; /* no need for this extra container */
+      /*display: contents; /* no need for this extra container */
       /*
       background: #181c20;
       border-radius: 18px;
@@ -228,7 +231,7 @@
       height: var(--pad);
       border-left: 2.5px solid;
       border-image: linear-gradient(to bottom, #F2A03D, #D95F43) 1;
-      margin: 0 14px;
+      margin: 0 1vw;
       opacity: 0.7;
       box-shadow: 0 0 6px #F2A03D44;
       align-self: center;
