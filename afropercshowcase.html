@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Video Carousel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: black;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .carousel-container {
+            max-width: 900px;
+            width: 100%;
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .carousel {
+            position: relative;
+            overflow: hidden;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Overlay carousel controls */
+        .carousel-overlay-controls {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 20px;
+            pointer-events: none;
+        }
+
+        .carousel-overlay-controls .carousel-btn {
+            pointer-events: all;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .carousel-overlay-controls .carousel-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Overlay dots positioned at bottom */
+        .carousel-overlay-dots {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            gap: 12px;
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            height: 400px;
+        }
+
+        .carousel-track.no-transition {
+            transition: none;
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            position: relative;
+            background: #000;
+        }
+
+        .carousel-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 15px;
+        }
+
+        /* New styles for text below videos */
+        .video-info {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 20px 25px;
+            margin-top: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        .video-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-description {
+            font-size: 1rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .carousel-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .carousel-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .carousel-btn:active {
+            transform: translateY(0);
+        }
+
+        .carousel-dots {
+            display: flex;
+            gap: 12px;
+        }
+
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-dot.active {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(255, 255, 255, 0.8);
+            transform: scale(1.2);
+        }
+
+        .carousel-dot:hover {
+            background: rgba(255, 255, 255, 0.7);
+            transform: scale(1.1);
+        }
+
+        /* Bottom Navigation Row - Only visible on larger screens */
+        .bottom-navigation {
+            display: none;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .nav-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            color: white;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-item-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-item-description {
+            font-size: 0.8rem;
+            opacity: 0.85;
+            line-height: 1.3;
+        }
+
+        /* Show bottom navigation on wider screens and hide video info */
+        @media (min-width: 850px) {
+            /* Hide regular controls when bottom navigation is visible */
+            .carousel-overlay-dots, .carousel-overlay-controls {
+                display: none;
+            }
+
+            .bottom-navigation {
+                display: grid;
+            }
+            
+            .video-info {
+                display: none;
+            }
+            
+            .carousel-container {
+                max-width: 1200px;
+                padding: 40px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .carousel-container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .carousel-title {
+                font-size: 2rem;
+                margin-bottom: 20px;
+            }
+
+            .carousel-track {
+                height: 250px;
+            }
+
+            .video-info {
+                padding: 15px 20px;
+                margin-top: 15px;
+            }
+
+            .video-title {
+                font-size: 1.2rem;
+                margin-bottom: 8px;
+            }
+
+            .video-description {
+                font-size: 0.9rem;
+            }
+
+            .carousel-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .carousel-track {
+                height: 200px;
+            }
+
+            .carousel-title {
+                font-size: 1.5rem;
+            }
+
+            .video-info {
+                padding: 12px 15px;
+                margin-top: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="carousel-container">
+        <div class="carousel" id="videoCarousel">
+            <div class="carousel-track" id="carouselTrack">
+                <!-- Clone of last slide for infinite effect -->
+                <div class="carousel-slide clone">
+                    <video class="carousel-video" muted loop>
+                        <source src="./showcase/feel.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                
+                <!-- Original slides -->
+                <div class="carousel-slide">
+                    <img class="carousel-video" src="./showcase/screenshot.png" />
+                </div>
+
+                <div class="carousel-slide">
+                    <video class="carousel-video" muted loop>
+                        <source src="./showcase/listen.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                
+                <div class="carousel-slide">
+                    <video class="carousel-video" muted loop>
+                        <source src="./showcase/shape.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+             
+                <div class="carousel-slide">
+                    <video class="carousel-video" muted loop>
+                        <source src="./showcase/edit.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                
+                <div class="carousel-slide">
+                    <video class="carousel-video" muted loop>
+                        <source src="./showcase/feel.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                
+                <!-- Clone of first slide for infinite effect -->
+                <div class="carousel-slide">
+                    <img class="carousel-video" src="./showcase/screenshot.png" />
+                </div>
+            </div>
+
+            <!-- Overlay controls (visible when bottom navigation is hidden) -->
+            <div class="carousel-overlay-controls">
+                <button class="carousel-btn" id="prevBtnOverlay">‹</button>
+                <button class="carousel-btn" id="nextBtnOverlay">›</button>
+            </div>
+
+            <!-- Overlay dots -->
+            <div class="carousel-overlay-dots">
+                <div class="carousel-dot active" data-slide="0"></div>
+                <div class="carousel-dot" data-slide="1"></div>
+                <div class="carousel-dot" data-slide="2"></div>
+                <div class="carousel-dot" data-slide="3"></div>
+                <div class="carousel-dot" data-slide="4"></div>
+            </div>
+        </div>
+        
+        <!-- Video information below the carousel -->
+        <div class="video-info" id="videoInfo">
+            <div class="video-title" id="videoTitle">Screenshot</div>
+            <div class="video-description" id="videoDescription">Application screenshot showcase</div>
+        </div>
+
+        <!-- Bottom Navigation Row (visible on larger screens) - Only shows slides 2-5 -->
+        <div class="bottom-navigation" id="bottomNavigation">
+            <div class="nav-item active" data-slide="1">
+                <div class="nav-item-title">Listen</div>
+                <div class="nav-item-description">Relaxing ocean waves crashing on a beautiful beach</div>
+            </div>
+            <div class="nav-item" data-slide="2">
+                <div class="nav-item-title">Shape</div>
+                <div class="nav-item-description">Breathtaking mountain landscapes and hiking trails</div>
+            </div>
+            <div class="nav-item" data-slide="3">
+                <div class="nav-item-title">Edit</div>
+                <div class="nav-item-description">Creative editing tools and workflow demonstrations</div>
+            </div>
+            <div class="nav-item" data-slide="4">
+                <div class="nav-item-title">Feel</div>
+                <div class="nav-item-description">Dynamic city skyline with vibrant nightlife</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class VideoCarousel {
+            constructor() {
+                this.currentSlide = 1; // Start at slide 2 (Listen) instead of 1 (Screenshot)
+                this.totalSlides = 5; // Original slides count
+                this.totalSlidesWithClones = this.totalSlides + 2; // Including clones
+                this.isAutoPlaying = false;
+                this.autoPlayInterval = null;
+                this.touchStartX = 0;
+                this.touchEndX = 0;
+                this.isTransitioning = false;
+                
+                // Video information data
+                this.videoData = [
+                    { title: "Groove Machine", description: "Slide to find out how it works" },
+                    { title: "Listen", description: "Feed it any track from your project — it generates a rhythm that fits perfectly" },
+                    { title: "Shape", description: "Shape a groove that matches your feel using Similarity, Density, and Intensity sliders" },
+                    { title: "Edit", description: "Drag MIDI into your DAW to tweak deeply, arrange freely, and trigger your own sounds" },
+                    { title: "Feel", description: "Unquantized, human feel patterns — raw, organic, and alive" }
+                ];
+                
+                this.initElements();
+                this.initEvents();
+                this.updateCarousel();
+            }
+            
+            initElements() {
+                this.track = document.getElementById('carouselTrack');
+                this.prevBtnOverlay = document.getElementById('prevBtnOverlay');
+                this.nextBtnOverlay = document.getElementById('nextBtnOverlay');
+                this.dots = document.querySelectorAll('.carousel-dot');
+                this.videos = document.querySelectorAll('.carousel-video');
+                this.videoTitle = document.getElementById('videoTitle');
+                this.videoDescription = document.getElementById('videoDescription');
+                this.navItems = document.querySelectorAll('.nav-item');
+                
+                // Set initial position to show first real slide
+                this.track.style.transform = `translateX(-${this.currentSlide * 100}%)`;
+            }
+            
+            initEvents() {
+                this.prevBtnOverlay.addEventListener('click', () => this.previousSlide());
+                this.nextBtnOverlay.addEventListener('click', () => this.nextSlide());
+                
+                this.dots.forEach((dot, index) => {
+                    dot.addEventListener('click', () => this.goToSlide(index));
+                });
+
+                // Bottom navigation events - Note: data-slide values are 1-4 now (skipping screenshot)
+                this.navItems.forEach((item, index) => {
+                    item.addEventListener('click', () => {
+                        const slideIndex = parseInt(item.getAttribute('data-slide'));
+                        // If clicking on already active item, go to screenshot (slide 0)
+                        if (item.classList.contains('active')) {
+                            this.goToSlide(0); // Go to screenshot
+                        } else {
+                            this.goToSlide(slideIndex); // Go to selected slide
+                        }
+                    });
+                });
+                
+                // Touch events for mobile swipe
+                this.track.addEventListener('touchstart', (e) => {
+                    this.touchStartX = e.changedTouches[0].screenX;
+                });
+                
+                this.track.addEventListener('touchend', (e) => {
+                    this.touchEndX = e.changedTouches[0].screenX;
+                    this.handleSwipe();
+                });
+                
+                // Keyboard navigation
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft') this.previousSlide();
+                    if (e.key === 'ArrowRight') this.nextSlide();
+                    if (e.key === ' ') {
+                        e.preventDefault();
+                        this.toggleAutoPlay();
+                    }
+                });
+                
+                // Pause auto-play when hovering over carousel
+                this.track.addEventListener('mouseenter', () => {
+                    if (this.isAutoPlaying) this.pauseAutoPlay();
+                });
+                
+                this.track.addEventListener('mouseleave', () => {
+                    if (this.isAutoPlaying) this.startAutoPlay();
+                });
+                
+                // Handle transition end for infinite loop
+                this.track.addEventListener('transitionend', () => {
+                    this.handleTransitionEnd();
+                });
+            }
+            
+            handleSwipe() {
+                const swipeThreshold = 50;
+                const diff = this.touchStartX - this.touchEndX;
+                
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        this.nextSlide();
+                    } else {
+                        this.previousSlide();
+                    }
+                }
+            }
+            
+            handleTransitionEnd() {
+                if (this.isTransitioning) {
+                    this.isTransitioning = false;
+                    
+                    // If we're at a clone, jump to the corresponding real slide
+                    if (this.currentSlide === 0) {
+                        // At first clone (last slide), jump to real last slide
+                        this.currentSlide = this.totalSlides;
+                        this.jumpToSlide();
+                    } else if (this.currentSlide === this.totalSlidesWithClones - 1) {
+                        // At last clone (first slide), jump to real first slide
+                        this.currentSlide = 1;
+                        this.jumpToSlide();
+                    }
+                    
+                    this.updateDots();
+                    this.updateBottomNavigation();
+                    this.updateVideoInfo();
+                    this.playCurrentVideo();
+                }
+            }
+            
+            jumpToSlide() {
+                this.track.classList.add('no-transition');
+                this.track.style.transform = `translateX(-${this.currentSlide * 100}%)`;
+                
+                // Force reflow to ensure no-transition class is applied
+                this.track.offsetHeight;
+                
+                // Remove no-transition class after a short delay
+                setTimeout(() => {
+                    this.track.classList.remove('no-transition');
+                }, 50);
+            }
+            
+            updateCarousel() {
+                this.isTransitioning = true;
+                const translateX = -this.currentSlide * 100;
+                this.track.style.transform = `translateX(${translateX}%)`;
+                
+                this.updateDots();
+                this.updateBottomNavigation();
+                this.updateVideoInfo();
+                
+                // If not transitioning to a clone, play video immediately
+                if (this.currentSlide > 0 && this.currentSlide < this.totalSlidesWithClones - 1) {
+                    this.playCurrentVideo();
+                }
+            }
+            
+            updateDots() {
+                // Map current slide to dot index (accounting for clones)
+                let dotIndex;
+                if (this.currentSlide === 0 || this.currentSlide === this.totalSlides + 1) {
+                    dotIndex = this.currentSlide === 0 ? this.totalSlides - 1 : 0;
+                } else {
+                    dotIndex = this.currentSlide - 1;
+                }
+                
+                this.dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === dotIndex);
+                });
+            }
+
+            updateBottomNavigation() {
+                // Get the actual video index (accounting for clones)
+                let videoIndex;
+                if (this.currentSlide === 0) {
+                    videoIndex = this.totalSlides - 1; // Last video
+                } else if (this.currentSlide === this.totalSlidesWithClones - 1) {
+                    videoIndex = 0; // First video
+                } else {
+                    videoIndex = this.currentSlide - 1;
+                }
+                
+                // Update bottom navigation - only show active for slides 1-4 (Listen, Shape, Edit, Feel)
+                this.navItems.forEach((item, index) => {
+                    const itemSlideIndex = parseInt(item.getAttribute('data-slide'));
+                    item.classList.toggle('active', itemSlideIndex === videoIndex);
+                });
+            }
+            
+            updateVideoInfo() {
+                // Get the actual video index (accounting for clones)
+                let videoIndex;
+                if (this.currentSlide === 0) {
+                    videoIndex = this.totalSlides - 1; // Last video
+                } else if (this.currentSlide === this.totalSlidesWithClones - 1) {
+                    videoIndex = 0; // First video
+                } else {
+                    videoIndex = this.currentSlide - 1;
+                }
+                
+                const videoInfo = this.videoData[videoIndex];
+                this.videoTitle.textContent = videoInfo.title;
+                this.videoDescription.textContent = videoInfo.description;
+            }
+            
+            playCurrentVideo() {
+                this.videos.forEach((video, index) => {
+                    if (index === this.currentSlide) {
+                        if (video.tagName === 'VIDEO') {
+                            video.play().catch(e => console.log('Video play failed:', e));
+                        }
+                    } else if (video.tagName === 'VIDEO') {
+                        video.pause();
+                        video.currentTime = 0;
+                    }
+                });
+            }
+            
+            nextSlide() {
+                if (this.isTransitioning) return;
+                
+                this.currentSlide++;
+                this.updateCarousel();
+            }
+            
+            previousSlide() {
+                if (this.isTransitioning) return;
+                
+                this.currentSlide--;
+                this.updateCarousel();
+            }
+            
+            goToSlide(index) {
+                if (this.isTransitioning) return;
+                
+                // Convert dot index to slide index (accounting for clones)
+                this.currentSlide = index + 1;
+                this.updateCarousel();
+            }
+            
+            startAutoPlay() {
+                if (this.autoPlayInterval) return;
+                this.autoPlayInterval = setInterval(() => {
+                    this.nextSlide();
+                }, 5000);
+            }
+            
+            pauseAutoPlay() {
+                if (this.autoPlayInterval) {
+                    clearInterval(this.autoPlayInterval);
+                    this.autoPlayInterval = null;
+                }
+            }
+            
+            toggleAutoPlay() {
+                this.isAutoPlaying = !this.isAutoPlaying;
+                
+                if (this.isAutoPlaying) {
+                    this.startAutoPlay();
+                    this.playPauseBtn.textContent = 'Pause Auto';
+                } else {
+                    this.pauseAutoPlay();
+                    this.playPauseBtn.textContent = 'Play Auto';
+                }
+            }
+        }
+        
+        // Initialize carousel when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new VideoCarousel();
+        });
+    </script>
+</body>
+</html>
