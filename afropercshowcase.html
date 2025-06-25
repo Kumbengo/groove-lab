@@ -46,7 +46,7 @@
             display: flex;
             justify-content: space-between;
             width: 100%;
-            padding: 0 20px;
+            padding: 0 5px;
             pointer-events: none;
         }
 
@@ -109,14 +109,14 @@
         }
 
         .video-title {
-            font-size: 1.5rem;
+            font-size: 1rem;
             font-weight: 600;
             margin-bottom: 10px;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .video-description {
-            font-size: 1rem;
+            font-size: 0.8rem;
             opacity: 0.9;
             line-height: 1.5;
         }
@@ -271,9 +271,12 @@
             }
 
             .carousel-btn {
-                width: 45px;
-                height: 45px;
+                width: 30px;
+                height: 30px;
                 font-size: 1.1rem;
+            }
+            .carousel-btn span {
+                margin-top: -5px;
             }
         }
 
@@ -346,8 +349,8 @@
 
             <!-- Overlay controls (visible when bottom navigation is hidden) -->
             <div class="carousel-overlay-controls">
-                <button class="carousel-btn" id="prevBtnOverlay">‹</button>
-                <button class="carousel-btn" id="nextBtnOverlay">›</button>
+                <button class="carousel-btn" id="prevBtnOverlay"><span>‹</span></button>
+                <button class="carousel-btn" id="nextBtnOverlay"><span>›</span></button>
             </div>
 
             <!-- Overlay dots -->
