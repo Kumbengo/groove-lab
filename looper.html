@@ -34,7 +34,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2vh 1vw;
+      padding: 5vh 1vw;
       border-radius: 18px;
       box-shadow: 0 4px 32px #000a;
     }
@@ -183,24 +183,25 @@
 
     /* ─── Stop All Button ───────────────────────────────────────── */
     #masterRow {
-      margin: 8px auto 0 auto;
+      margin-top: clamp(8px, 20%, 22px);
       display: flex;
       justify-content: center;
     }
 
     #killAll {
       border-radius: 8px;
-      padding: 12px 36px;
       background: #D95F43;
       border: 2px solid #D95F43;
       color: #fff;
-      font-size: clamp(14px, 4vw, 17px);
       font-family: 'Krub', sans-serif;
       cursor: pointer;
       transition: background 0.3s, color 0.2s;
       box-shadow: 0 2px 8px #0008;
-      width: 100%;
-      max-width: 280px;
+
+      padding-top: 5%;
+      padding-bottom: 5%;
+      font-size: clamp(1px, 4vw, 23px);
+      width: clamp(80px, 25vw, 150px);
     }
 
     #killAll:hover {
