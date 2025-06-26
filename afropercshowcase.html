@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Responsive Video Carousel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Krub:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,29 +13,40 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Krub', sans-serif;
             background: black;
             min-height: 100vh;
             padding: 20px;
+        }
+
+        .main-bg-container {
+            background: #181c20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5vh 1vw;
+            border-radius: 18px;
+            box-shadow: 0 4px 32px #000a;
         }
 
         .carousel-container {
             max-width: 900px;
             width: 100%;
             position: relative;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            /* background: rgba(255, 255, 255, 0.1); */
+            /* backdrop-filter: blur(10px); */
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            /* box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2); */
+            /* border: 1px solid rgba(255, 255, 255, 0.2); */
         }
 
         .carousel {
             position: relative;
             overflow: hidden;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            /* border-radius: 15px; */
+            /* box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3); */
+            background: #181c20;
         }
 
         /* Overlay carousel controls */
@@ -86,14 +98,19 @@
         .carousel-slide {
             min-width: 100%;
             position: relative;
-            background: #000;
+            background: #181c20;
+            /* border-radius: 15px; */
+            /* border: none; */
         }
 
         .carousel-video {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            border-radius: 15px;
+            /* border-radius: 15px; */
+            background: #181c20;
+            border: none;
+            box-shadow: none;
         }
 
         /* New styles for text below videos */
@@ -297,95 +314,97 @@
     </style>
 </head>
 <body>
-    <div class="carousel-container">
-        <div class="carousel" id="videoCarousel">
-            <div class="carousel-track" id="carouselTrack">
-                <!-- Clone of last slide for infinite effect -->
-                <div class="carousel-slide clone">
-                    <video class="carousel-video" muted loop>
-                        <source src="./showcase/feel.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
-                
-                <!-- Original slides -->
-                <div class="carousel-slide">
-                    <img class="carousel-video" src="./showcase/screenshot.png" />
+    <div class="main-bg-container">
+        <div class="carousel-container">
+            <div class="carousel" id="videoCarousel">
+                <div class="carousel-track" id="carouselTrack">
+                    <!-- Clone of last slide for infinite effect -->
+                    <div class="carousel-slide clone">
+                        <video class="carousel-video" muted loop>
+                            <source src="./showcase/feel.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    
+                    <!-- Original slides -->
+                    <div class="carousel-slide">
+                        <img class="carousel-video" src="./showcase/screenshot.png" />
+                    </div>
+
+                    <div class="carousel-slide">
+                        <video class="carousel-video" muted loop>
+                            <source src="./showcase/listen.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    
+                    <div class="carousel-slide">
+                        <video class="carousel-video" muted loop>
+                            <source src="./showcase/shape.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                 
+                    <div class="carousel-slide">
+                        <video class="carousel-video" muted loop>
+                            <source src="./showcase/edit.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    
+                    <div class="carousel-slide">
+                        <video class="carousel-video" muted loop>
+                            <source src="./showcase/feel.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    
+                    <!-- Clone of first slide for infinite effect -->
+                    <div class="carousel-slide">
+                        <img class="carousel-video" src="./showcase/screenshot.png" />
+                    </div>
                 </div>
 
-                <div class="carousel-slide">
-                    <video class="carousel-video" muted loop>
-                        <source src="./showcase/listen.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
+                <!-- Overlay controls (visible when bottom navigation is hidden) -->
+                <div class="carousel-overlay-controls">
+                    <button class="carousel-btn" id="prevBtnOverlay"><span>‹</span></button>
+                    <button class="carousel-btn" id="nextBtnOverlay"><span>›</span></button>
                 </div>
-                
-                <div class="carousel-slide">
-                    <video class="carousel-video" muted loop>
-                        <source src="./showcase/shape.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
+
+                <!-- Overlay dots -->
+                <div class="carousel-overlay-dots">
+                    <div class="carousel-dot active" data-slide="0"></div>
+                    <div class="carousel-dot" data-slide="1"></div>
+                    <div class="carousel-dot" data-slide="2"></div>
+                    <div class="carousel-dot" data-slide="3"></div>
+                    <div class="carousel-dot" data-slide="4"></div>
                 </div>
-             
-                <div class="carousel-slide">
-                    <video class="carousel-video" muted loop>
-                        <source src="./showcase/edit.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
-                
-                <div class="carousel-slide">
-                    <video class="carousel-video" muted loop>
-                        <source src="./showcase/feel.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
-                
-                <!-- Clone of first slide for infinite effect -->
-                <div class="carousel-slide">
-                    <img class="carousel-video" src="./showcase/screenshot.png" />
-                </div>
+            </div>
+            
+            <!-- Video information below the carousel -->
+            <div class="video-info" id="videoInfo">
+                <div class="video-title" id="videoTitle">Screenshot</div>
+                <div class="video-description" id="videoDescription">Application screenshot showcase</div>
             </div>
 
-            <!-- Overlay controls (visible when bottom navigation is hidden) -->
-            <div class="carousel-overlay-controls">
-                <button class="carousel-btn" id="prevBtnOverlay"><span>‹</span></button>
-                <button class="carousel-btn" id="nextBtnOverlay"><span>›</span></button>
-            </div>
-
-            <!-- Overlay dots -->
-            <div class="carousel-overlay-dots">
-                <div class="carousel-dot active" data-slide="0"></div>
-                <div class="carousel-dot" data-slide="1"></div>
-                <div class="carousel-dot" data-slide="2"></div>
-                <div class="carousel-dot" data-slide="3"></div>
-                <div class="carousel-dot" data-slide="4"></div>
-            </div>
-        </div>
-        
-        <!-- Video information below the carousel -->
-        <div class="video-info" id="videoInfo">
-            <div class="video-title" id="videoTitle">Screenshot</div>
-            <div class="video-description" id="videoDescription">Application screenshot showcase</div>
-        </div>
-
-        <!-- Bottom Navigation Row (visible on larger screens) - Only shows slides 2-5 -->
-        <div class="bottom-navigation" id="bottomNavigation">
-            <div class="nav-item active" data-slide="1">
-                <div class="nav-item-title">Listen</div>
-                <div class="nav-item-description">Relaxing ocean waves crashing on a beautiful beach</div>
-            </div>
-            <div class="nav-item" data-slide="2">
-                <div class="nav-item-title">Shape</div>
-                <div class="nav-item-description">Breathtaking mountain landscapes and hiking trails</div>
-            </div>
-            <div class="nav-item" data-slide="3">
-                <div class="nav-item-title">Edit</div>
-                <div class="nav-item-description">Creative editing tools and workflow demonstrations</div>
-            </div>
-            <div class="nav-item" data-slide="4">
-                <div class="nav-item-title">Feel</div>
-                <div class="nav-item-description">Dynamic city skyline with vibrant nightlife</div>
+            <!-- Bottom Navigation Row (visible on larger screens) - Only shows slides 2-5 -->
+            <div class="bottom-navigation" id="bottomNavigation">
+                <div class="nav-item active" data-slide="1">
+                    <div class="nav-item-title">Listen</div>
+                    <div class="nav-item-description">Relaxing ocean waves crashing on a beautiful beach</div>
+                </div>
+                <div class="nav-item" data-slide="2">
+                    <div class="nav-item-title">Shape</div>
+                    <div class="nav-item-description">Breathtaking mountain landscapes and hiking trails</div>
+                </div>
+                <div class="nav-item" data-slide="3">
+                    <div class="nav-item-title">Edit</div>
+                    <div class="nav-item-description">Creative editing tools and workflow demonstrations</div>
+                </div>
+                <div class="nav-item" data-slide="4">
+                    <div class="nav-item-title">Feel</div>
+                    <div class="nav-item-description">Dynamic city skyline with vibrant nightlife</div>
+                </div>
             </div>
         </div>
     </div>
