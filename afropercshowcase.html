@@ -557,7 +557,10 @@
                 this.autoPlayInterval = null;
                 this.touchStartX = 0;
                 this.touchEndX = 0;
+
                 this.isTransitioning = false;
+                this.lastTransition = 0;
+                this.maxtransitionDurationMs = 700;
                 
                 // Video information data
                 this.videoData = [
@@ -571,6 +574,10 @@
                 this.initElements();
                 this.initEvents();
                 this.updateCarousel(true);
+            }
+
+            isDisabled() {
+                return this.isTransitioning && ((new Date().getTime() - this.lastTransition) < this.maxtransitionDurationMs);
             }
             
             initElements() {
@@ -693,8 +700,10 @@
             }
             
             updateCarousel(initial = false) {
-                if (!initial)
+                if (!initial) {
                     this.isTransitioning = true;
+                    this.lastTransition = new Date().getTime();
+                }
                 const translateX = -this.currentSlide * 100;
                 this.track.style.transform = `translateX(${translateX}%)`;
                 
@@ -772,21 +781,21 @@
             }
             
             nextSlide() {
-                if (this.isTransitioning) return;
+                if (this.isDisabled()) return;
                 
                 this.currentSlide++;
                 this.updateCarousel();
             }
             
             previousSlide() {
-                if (this.isTransitioning) return;
+                if (this.isDisabled()) return;
                 
                 this.currentSlide--;
                 this.updateCarousel();
             }
             
             goToSlide(index) {
-                if (this.isTransitioning) return;
+                if (this.isDisabled()) return;
                 
                 // Convert dot index to slide index (accounting for clones)
                 this.currentSlide = index + 1;
