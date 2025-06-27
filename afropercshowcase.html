@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kumbengo AfroPerc Showcase</title>
-    <link href="https://fonts.googleapis.com/css2?family=Krub:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;400;600&display=swap" rel="stylesheet">
     <script src="./unmute-ios-audio.js"></script>
     <script>
         unmuteIosAudio();
@@ -22,7 +22,7 @@
         }
 
         body {
-            font-family: 'Krub', sans-serif;
+            font-family: 'Inter', 'Futura', 'Arial', sans-serif;
             background: black;
             min-height: 100vh;
             padding: 8px;
@@ -138,15 +138,14 @@
 
         .video-title {
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 200;
             margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            /* text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); */
         }
 
         .video-description {
-            font-size: 0.8rem;
-            opacity: 0.9;
-            line-height: 1.5;
+            font-size: 0.9rem;
+            line-height: 1.3;
         }
 
         .carousel-btn {
@@ -254,14 +253,13 @@
 
         .nav-item-title {
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 200;
             margin-bottom: 6px;
             /* text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); */
         }
 
         .nav-item-description {
-            font-size: 0.8rem;
-            opacity: 0.85;
+            font-size: 0.9rem;
             line-height: 1.3;
         }
 
@@ -330,7 +328,7 @@
         .bottom-navigation .nav-item:nth-child(4),
         .video-info[data-selected-slide="5"] {
             background: #BE5B54;
-            /* color: #fff; */
+            color: #282626;
         }
 
         .bottom-navigation .nav-item:nth-child(1):hover {
@@ -410,6 +408,19 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
+            }
+
+            /* Ensure nav-item fonts match desktop */
+            .nav-item-title {
+                font-size: 1rem;
+                font-weight: 200;
+            }
+            .nav-item-description {
+                font-size: 0.9rem;
+                line-height: 1.3;
+            }
+            .nav-item:not(.active) .card-front .nav-item-title {
+                font-size: 1.2rem;
             }
         }
 
