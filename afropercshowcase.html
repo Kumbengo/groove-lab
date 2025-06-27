@@ -227,6 +227,7 @@
             width: 100%;
             height: 100%;
             box-sizing: border-box;
+            transition-duration: 700ms;
         }
 
         .nav-item:hover {
@@ -265,12 +266,19 @@
             min-width: 180px;
             box-sizing: border-box;
         }
-        .nav-item.flipped .card-inner,
-        .nav-item.active .card-inner {
+        .nav-item.flipped,
+        .nav-item.active {
             transform: rotateY(180deg);
+        }
+        .nav-item.flipped .card-back {
+            transform: rotateY(0deg) scaleX(-1);
+        }
+        .nav-item.flipped .card-front {
+            transform: rotateY(90deg);
         }
         .nav-item .card-front,
         .nav-item .card-back {
+            transform: rotateY(0deg);
             position: absolute;
             width: 100%;
             height: 100%;
@@ -282,6 +290,7 @@
             justify-content: center;
             flex-direction: column;
             box-sizing: border-box;
+            transition-duration: 400ms;
         }
         .nav-item .card-front {
             z-index: 2;
@@ -289,7 +298,7 @@
             align-items: center;
         }
         .nav-item .card-back {
-            transform: rotateY(180deg);
+            transform: rotateY(-180deg);
             z-index: 1;
             justify-content: center;
             align-items: center;
