@@ -33,7 +33,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 0.5vh 0.2vw;
+            padding: 0;
             border-radius: 18px;
             box-shadow: 0 4px 32px #000a;
             border: 1px solid #F2A03D;
@@ -131,6 +131,10 @@
             color: white;
             padding: 20px 25px;
             margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 900px;
+            width: 100%;
             border-radius: 15px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             text-align: center;
@@ -447,120 +451,120 @@
 </head>
 <body>
     <div class="main-bg-container">
-        <div class="carousel-container">
-            <div class="carousel" id="videoCarousel">
-                <div class="carousel-track" id="carouselTrack">
-                    <!-- Clone of last slide for infinite effect -->
-                    <div class="carousel-slide clone">
+    <div class="carousel-container">
+        <div class="carousel" id="videoCarousel">
+            <div class="carousel-track" id="carouselTrack">
+                <!-- Clone of last slide for infinite effect -->
+                <div class="carousel-slide clone">
                         <video class="carousel-video" playsinline muted loop>
-                            <source src="./showcase/feel.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                    
-                    <!-- Original slides -->
-                    <div class="carousel-slide">
-                        <img class="carousel-video" src="./showcase/screenshot.png" />
-                    </div>
-
-                    <div class="carousel-slide">
-                        <video class="carousel-video" playsinline muted loop>
-                            <source src="./showcase/listen.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                    
-                    <div class="carousel-slide">
-                        <video class="carousel-video" playsinline muted loop>
-                            <source src="./showcase/shape.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                 
-                    <div class="carousel-slide">
-                        <video class="carousel-video" playsinline muted loop>
-                            <source src="./showcase/edit.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                    
-                    <div class="carousel-slide">
-                        <video class="carousel-video" playsinline muted loop>
-                            <source src="./showcase/feel.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                    
-                    <!-- Clone of first slide for infinite effect -->
-                    <div class="carousel-slide">
-                        <img class="carousel-video" src="./showcase/screenshot.png" />
-                    </div>
+                        <source src="./showcase/feel.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                
+                <!-- Original slides -->
+                <div class="carousel-slide">
+                    <img class="carousel-video" src="./showcase/screenshot.png" />
                 </div>
 
-                <!-- Overlay controls (visible when bottom navigation is hidden) -->
-                <div class="carousel-overlay-controls">
-                    <button class="carousel-btn" id="prevBtnOverlay"><span>‹</span></button>
-                    <button class="carousel-btn" id="nextBtnOverlay"><span>›</span></button>
+                <div class="carousel-slide">
+                        <video class="carousel-video" playsinline muted loop>
+                        <source src="./showcase/listen.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
                 </div>
-
-                <!-- Overlay dots -->
-                <div class="carousel-overlay-dots">
-                    <div class="carousel-dot active" data-slide="0"></div>
-                    <div class="carousel-dot" data-slide="1"></div>
-                    <div class="carousel-dot" data-slide="2"></div>
-                    <div class="carousel-dot" data-slide="3"></div>
-                    <div class="carousel-dot" data-slide="4"></div>
+                
+                <div class="carousel-slide">
+                        <video class="carousel-video" playsinline muted loop>
+                        <source src="./showcase/shape.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+             
+                <div class="carousel-slide">
+                        <video class="carousel-video" playsinline muted loop>
+                        <source src="./showcase/edit.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                
+                <div class="carousel-slide">
+                        <video class="carousel-video" playsinline muted loop>
+                        <source src="./showcase/feel.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                
+                <!-- Clone of first slide for infinite effect -->
+                <div class="carousel-slide">
+                    <img class="carousel-video" src="./showcase/screenshot.png" />
                 </div>
             </div>
-            
-            <!-- Video information below the carousel -->
+
+            <!-- Overlay controls (visible when bottom navigation is hidden) -->
+            <div class="carousel-overlay-controls">
+                <button class="carousel-btn" id="prevBtnOverlay"><span>‹</span></button>
+                <button class="carousel-btn" id="nextBtnOverlay"><span>›</span></button>
+            </div>
+
+            <!-- Overlay dots -->
+            <div class="carousel-overlay-dots">
+                <div class="carousel-dot active" data-slide="0"></div>
+                <div class="carousel-dot" data-slide="1"></div>
+                <div class="carousel-dot" data-slide="2"></div>
+                <div class="carousel-dot" data-slide="3"></div>
+                <div class="carousel-dot" data-slide="4"></div>
+            </div>
+        </div>
+        
+        <!-- Video information below the carousel -->
             <div class="video-info" id="videoInfo" data-selected-slide="1">
-                <div class="video-title" id="videoTitle">Screenshot</div>
-                <div class="video-description" id="videoDescription">Application screenshot showcase</div>
-            </div>
+            <div class="video-title" id="videoTitle">Screenshot</div>
+            <div class="video-description" id="videoDescription">Application screenshot showcase</div>
+        </div>
 
-            <!-- Bottom Navigation Row (visible on larger screens) - Only shows slides 2-5 -->
-            <div class="bottom-navigation" id="bottomNavigation">
-                <div class="nav-item active" data-slide="1">
+        <!-- Bottom Navigation Row (visible on larger screens) - Only shows slides 2-5 -->
+        <div class="bottom-navigation" id="bottomNavigation">
+            <div class="nav-item active" data-slide="1">
                     <div class="card-inner">
                         <div class="card-front">
                             <div class="nav-item-title">Listen</div>
                         </div>
                         <div class="card-back">
-                            <div class="nav-item-title">Listen</div>
+                <div class="nav-item-title">Listen</div>
                             <div class="nav-item-description">Feed it any track from your project — it generates a rhythm that fits perfectly</div>
                         </div>
                     </div>
-                </div>
-                <div class="nav-item" data-slide="2">
+            </div>
+            <div class="nav-item" data-slide="2">
                     <div class="card-inner">
                         <div class="card-front">
                             <div class="nav-item-title">Shape</div>
                         </div>
                         <div class="card-back">
-                            <div class="nav-item-title">Shape</div>
+                <div class="nav-item-title">Shape</div>
                             <div class="nav-item-description">Shape a groove that matches your feel using Similarity, Density, and Intensity sliders</div>
                         </div>
                     </div>
-                </div>
-                <div class="nav-item" data-slide="3">
+            </div>
+            <div class="nav-item" data-slide="3">
                     <div class="card-inner">
                         <div class="card-front">
                             <div class="nav-item-title">Edit</div>
                         </div>
                         <div class="card-back">
-                            <div class="nav-item-title">Edit</div>
+                <div class="nav-item-title">Edit</div>
                             <div class="nav-item-description">Drag MIDI into your DAW to tweak deeply, arrange freely, and trigger your own sounds</div>
                         </div>
                     </div>
-                </div>
-                <div class="nav-item" data-slide="4">
+            </div>
+            <div class="nav-item" data-slide="4">
                     <div class="card-inner">
                         <div class="card-front">
                             <div class="nav-item-title">Feel</div>
                         </div>
                         <div class="card-back">
-                            <div class="nav-item-title">Feel</div>
+                <div class="nav-item-title">Feel</div>
                             <div class="nav-item-description">Unquantized, human feel patterns — raw, organic, and alive</div>
                         </div>
                     </div>
@@ -723,7 +727,7 @@
             
             updateCarousel(initial = false) {
                 if (!initial) {
-                    this.isTransitioning = true;
+                this.isTransitioning = true;
                     this.lastTransition = new Date().getTime();
                 }
                 const translateX = -this.currentSlide * 100;
