@@ -570,7 +570,7 @@
                 
                 this.initElements();
                 this.initEvents();
-                this.updateCarousel();
+                this.updateCarousel(true);
             }
             
             initElements() {
@@ -692,8 +692,9 @@
                 }, 50);
             }
             
-            updateCarousel() {
-                this.isTransitioning = true;
+            updateCarousel(initial = false) {
+                if (!initial)
+                    this.isTransitioning = true;
                 const translateX = -this.currentSlide * 100;
                 this.track.style.transform = `translateX(${translateX}%)`;
                 
