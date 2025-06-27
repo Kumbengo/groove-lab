@@ -263,7 +263,6 @@
             width: 100%;
             height: 100%;
             min-height: 60px;
-            min-width: 180px;
             box-sizing: border-box;
         }
         .nav-item.flipped,
@@ -304,19 +303,23 @@
             align-items: center;
         }
 
-        .bottom-navigation .nav-item:nth-child(1) {
+        .bottom-navigation .nav-item:nth-child(1),
+        .video-info[data-selected-slide="2"] {
             background: #F2A03D;
             color: #181c20;
         }
-        .bottom-navigation .nav-item:nth-child(2) {
+        .bottom-navigation .nav-item:nth-child(2),
+        .video-info[data-selected-slide="3"] {
             background: #DBDBDB;
             color: #181c20;
         }
-        .bottom-navigation .nav-item:nth-child(3) {
+        .bottom-navigation .nav-item:nth-child(3),
+        .video-info[data-selected-slide="4"] {
             background: #F3EAD8;
             color: #181c20;
         }
-        .bottom-navigation .nav-item:nth-child(4) {
+        .bottom-navigation .nav-item:nth-child(4),
+        .video-info[data-selected-slide="5"] {
             background: #BE5B54;
             /* color: #fff; */
         }
@@ -489,7 +492,7 @@
             </div>
             
             <!-- Video information below the carousel -->
-            <div class="video-info" id="videoInfo">
+            <div class="video-info" id="videoInfo" data-selected-slide="1">
                 <div class="video-title" id="videoTitle">Screenshot</div>
                 <div class="video-description" id="videoDescription">Application screenshot showcase</div>
             </div>
@@ -579,6 +582,7 @@
                 this.videoTitle = document.getElementById('videoTitle');
                 this.videoDescription = document.getElementById('videoDescription');
                 this.navItems = document.querySelectorAll('.nav-item');
+                this.videoInfo = document.getElementById('videoInfo');
                 
                 // Set initial position to show first real slide
                 this.track.style.transform = `translateX(-${this.currentSlide * 100}%)`;
@@ -696,6 +700,7 @@
                 this.updateDots();
                 this.updateBottomNavigation();
                 this.updateVideoInfo();
+                this.videoInfo.setAttribute('data-selected-slide', this.currentSlide);
                 
                 // If not transitioning to a clone, play video immediately
                 if (this.currentSlide > 0 && this.currentSlide < this.totalSlidesWithClones - 1) {
