@@ -3,30 +3,33 @@ const masters = [
         id: 'M1',
         url: './Clave.wav',
         displayName: 'Clave',
+        volume: -6, // dB, lower is quieter
         variations: [
-            { id: 'A1', url: './Clave_Variation_1.wav', displayName: 'AfroPerc' },
-            { id: 'B1', url: './Clave_Variation_2.wav', displayName: 'AfroPerc' },
-            { id: 'C1', url: './Clave_Variation_3.wav', displayName: 'AfroPerc' }
+            { id: 'A1', url: './Clave_Variation_1.wav', displayName: 'AfroPerc', volume: -3 },
+            { id: 'B1', url: './Clave_Variation_2.wav', displayName: 'AfroPerc', volume: -3 },
+            { id: 'C1', url: './Clave_Variation_3.wav', displayName: 'AfroPerc', volume: -3 }
         ]
     },
     {
         id: 'M2',
         url: './SF2_Clavinet.wav',
         displayName: 'Keys',
+        volume: -10,
         variations: [
-            { id: 'A2', url: './SF2_Clavinet_Variation3_Minimal.wav', displayName: 'AfroPerc' },
-            { id: 'B2', url: './SF2_Clavinet_Variation1.wav', displayName: 'AfroPerc' },
-            { id: 'C2', url: './SF2_Clavinet_Variation2.wav', displayName: 'AfroPerc' }
+            { id: 'A2', url: './SF2_Clavinet_Variation3_Minimal.wav', displayName: 'AfroPerc', volume: 0 },
+            { id: 'B2', url: './SF2_Clavinet_Variation1.wav', displayName: 'AfroPerc', volume: 0 },
+            { id: 'C2', url: './SF2_Clavinet_Variation2.wav', displayName: 'AfroPerc', volume: 0 }
         ]
     },
     {
         id: 'M3',
         url: './BassLine.wav',
         displayName: 'Bass',
+        volume: 0,
         variations: [
-            { id: 'A3', url: './BassLine_Variation1.wav', displayName: 'AfroPerc' },
-            { id: 'B3', url: './BassLine_Variation2.wav', displayName: 'AfroPerc' },
-            { id: 'C3', url: './BassLine_Variation3.wav', displayName: 'AfroPerc' }
+            { id: 'A3', url: './BassLine_Variation1.wav', displayName: 'AfroPerc', volume: 0 },
+            { id: 'B3', url: './BassLine_Variation2.wav', displayName: 'AfroPerc', volume: 0 },
+            { id: 'C3', url: './BassLine_Variation3.wav', displayName: 'AfroPerc', volume: 0 }
         ]
     }
 ];
@@ -58,10 +61,24 @@ masters.forEach(master => {
 
 // Load audio
 function setupTrack(id, url) {
+    // Find the master or variation object to get the volume
+    let volume = 0;
+    for (const master of masters) {
+        if (master.id === id) {
+            volume = master.volume || 0;
+            break;
+        }
+        const variation = master.variations.find(v => v.id === id);
+        if (variation) {
+            volume = variation.volume || 0;
+            break;
+        }
+    }
     const player = new Tone.Player({
         url, loop: false, autostart: false,
         onload: onFileReady
     }).toDestination();
+    player.volume.value = volume; // Set the volume in dB
     player.sync().start(0);
     player.mute = true;
     players[id] = player;
