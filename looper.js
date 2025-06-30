@@ -104,12 +104,27 @@ function createButton(id, url) {
     const btn = document.createElement('button');
     btn.className = 'toggle';
     btn.disabled = true;
+
+    // In createButton, add a class to the icon span for master or variation
+    let iconClass = '';
+    if (/^[ABC]\d+$/.test(id)) {
+        iconClass = 'variation-icon';
+    } else {
+        iconClass = 'master-icon';
+    }
     btn.innerHTML = `<span>${name}</span>
-      <span class="icon" aria-label="play">
-        <svg width="32" height="32" viewBox="0 0 32 32" style="display:block; margin: 0 auto;">
+      <span class="icon ${iconClass}" aria-label="play">
+        <svg width="1em" height="1em" viewBox="0 0 32 32" style="display:block; margin: 0 auto;">
           <polygon points="12,9 24,16 12,23" fill="#fff" opacity="0.5"/>
         </svg>
       </span>`;
+
+    // After button creation, for master buttons, set icon to white (opacity 1)
+    if (iconClass === 'master-icon') {
+        const icon = btn.querySelector('polygon');
+        if (icon) icon.setAttribute('opacity', '1');
+    }
+
     buttons[id] = btn;
 
     // For variation pads, wrap in .pad-wrapper
@@ -227,6 +242,18 @@ function enableToggles() {
                 } else {
                     vBtn.classList.add('variation-enabled');
                     // (No glow-square added)
+                }
+
+                // In the variation button toggle logic (inside enableToggles),
+                // when a variation is activated (variation-selected), set icon opacity to 1 (white), otherwise 0.5 (grey)
+                // Add after vBtn.classList.toggle('variation-selected', wasMuted);
+                const icon = vBtn.querySelector('polygon');
+                if (icon) {
+                    if (wasMuted) {
+                        icon.setAttribute('opacity', '1');
+                    } else {
+                        icon.setAttribute('opacity', '0.5');
+                    }
                 }
             };
         });
