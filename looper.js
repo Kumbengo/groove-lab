@@ -2,28 +2,31 @@ const masters = [
     {
         id: 'M1',
         url: './Clave.wav',
+        displayName: 'Clave',
         variations: [
-            { id: 'A1', url: './Clave_Variation_1.wav' },
-            { id: 'B1', url: './Clave_Variation_2.wav' },
-            { id: 'C1', url: './Clave_Variation_3.wav' }
+            { id: 'A1', url: './Clave_Variation_1.wav', displayName: 'AfroPerc' },
+            { id: 'B1', url: './Clave_Variation_2.wav', displayName: 'AfroPerc' },
+            { id: 'C1', url: './Clave_Variation_3.wav', displayName: 'AfroPerc' }
         ]
     },
     {
         id: 'M2',
         url: './SF2_Clavinet.wav',
+        displayName: 'Keys',
         variations: [
-            { id: 'A2', url: './SF2_Clavinet_Variation3_Minimal.wav' },
-            { id: 'B2', url: './SF2_Clavinet_Variation1.wav' },
-            { id: 'C2', url: './SF2_Clavinet_Variation2.wav' }
+            { id: 'A2', url: './SF2_Clavinet_Variation3_Minimal.wav', displayName: 'AfroPerc' },
+            { id: 'B2', url: './SF2_Clavinet_Variation1.wav', displayName: 'AfroPerc' },
+            { id: 'C2', url: './SF2_Clavinet_Variation2.wav', displayName: 'AfroPerc' }
         ]
     },
     {
         id: 'M3',
         url: './BassLine.wav',
+        displayName: 'Bass',
         variations: [
-            { id: 'A3', url: './BassLine_Variation1.wav' },
-            { id: 'B3', url: './BassLine_Variation2.wav' },
-            { id: 'C3', url: './BassLine_Variation3.wav' }
+            { id: 'A3', url: './BassLine_Variation1.wav', displayName: 'AfroPerc' },
+            { id: 'B3', url: './BassLine_Variation2.wav', displayName: 'AfroPerc' },
+            { id: 'C3', url: './BassLine_Variation3.wav', displayName: 'AfroPerc' }
         ]
     }
 ];
@@ -66,8 +69,21 @@ function setupTrack(id, url) {
 
 // Create pad button
 function createButton(id, url) {
+    // Find the master or variation object to check for displayName
+    let displayName = null;
+    for (const master of masters) {
+        if (master.id === id) {
+            displayName = master.displayName;
+            break;
+        }
+        const variation = master.variations.find(v => v.id === id);
+        if (variation) {
+            displayName = variation.displayName;
+            break;
+        }
+    }
     if (!players[id]) setupTrack(id, url);
-    const name = url.split('/').pop().replace(/\.[^/.]+$/, '');
+    const name = displayName || url.split('/').pop().replace(/\.[^/.]+$/, '');
     const btn = document.createElement('button');
     btn.className = 'toggle';
     btn.disabled = true;
