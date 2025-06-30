@@ -75,9 +75,8 @@
 
     .toggle {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       width: var(--pad);
       height: var(--pad);
       background: #232323;
@@ -88,8 +87,14 @@
       box-shadow: 0 2px 8px #0008;
       position: relative;
       z-index: 1;
-      padding-top: 18px;
-      padding-bottom: 18px;
+      padding: 0;
+    }
+
+    .toggle-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.12em;
     }
 
     .toggle span {
@@ -105,8 +110,8 @@
     }
 
     .toggle .icon svg {
-      width: 1em;
-      height: 1em;
+      width: 2em;
+      height: 2em;
       display: block;
       margin: 0 auto;
     }
