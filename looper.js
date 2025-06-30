@@ -3,27 +3,27 @@ const masters = [
         id: 'M1',
         url: './Clave.wav',
         variations: [
-            { id: 'A1', url: './AfroPerc1.wav' },
-            { id: 'B1', url: './AfroPerc2.wav' },
-            { id: 'C1', url: './AfroPerc2.wav' }
+            { id: 'A1', url: './Clave_Variation_1.wav' },
+            { id: 'B1', url: './Clave_Variation_2.wav' },
+            { id: 'C1', url: './Clave_Variation_3.wav' }
         ]
     },
     {
         id: 'M2',
-        url: './funk.mp3',
+        url: './SF2_Clavinet.wav',
         variations: [
-            { id: 'A2', url: './AfroPerc1.wav' },
-            { id: 'B2', url: './AfroPerc2.wav' },
-            { id: 'C2', url: './AfroPerc2.wav' }
+            { id: 'A2', url: './SF2_Clavinet_Variation3_Minimal.wav' },
+            { id: 'B2', url: './SF2_Clavinet_Variation1.wav' },
+            { id: 'C2', url: './SF2_Clavinet_Variation2.wav' }
         ]
     },
     {
         id: 'M3',
-        url: './Clave.wav',
+        url: './BassLine.wav',
         variations: [
-            { id: 'A3', url: './AfroPerc1.wav' },
-            { id: 'B3', url: './AfroPerc2.wav' },
-            { id: 'C3', url: './AfroPerc2.wav' }
+            { id: 'A3', url: './BassLine_Variation1.wav' },
+            { id: 'B3', url: './BassLine_Variation2.wav' },
+            { id: 'C3', url: './BassLine_Variation3.wav' }
         ]
     }
 ];
