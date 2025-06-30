@@ -104,7 +104,12 @@ function createButton(id, url) {
     const btn = document.createElement('button');
     btn.className = 'toggle';
     btn.disabled = true;
-    btn.innerHTML = `<span>${name}</span><span class="icon">▶</span>`;
+    btn.innerHTML = `<span>${name}</span>
+      <span class="icon" aria-label="play">
+        <svg width="32" height="32" viewBox="0 0 32 32" style="display:block; margin: 0 auto;">
+          <polygon points="12,9 24,16 12,23" fill="#fff" opacity="0.5"/>
+        </svg>
+      </span>`;
     buttons[id] = btn;
 
     // For variation pads, wrap in .pad-wrapper
