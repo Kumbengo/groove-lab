@@ -112,7 +112,7 @@ function createButton(id, url) {
     } else {
         iconClass = 'master-icon';
     }
-    btn.innerHTML = `<span class="toggle-content"><span>${name}</span><span class="icon ${iconClass}" aria-label="play"><svg width="2em" height="2em" viewBox="0 0 32 32" style="display:block; margin: 0 auto;"><polygon points="12,9 24,16 12,23" fill="#fff" opacity="0.5"/></svg></span></span>`;
+    btn.innerHTML = `<span class="toggle-content"><span>${name}</span><span class="icon ${iconClass}" aria-label="play"><svg width="1.8em" height="1.8em" viewBox="0 0 32 32" style="display:block; margin: 0 auto;"><polygon points="12,9 24,16 12,23" fill="#fff" opacity="0.5"/></svg></span></span>`;
 
     // After button creation, for master buttons, set icon to white (opacity 1)
     if (iconClass === 'master-icon') {
